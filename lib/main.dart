@@ -354,7 +354,8 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
                           crossAxisAlignment: CrossAxisAlignment.start, // ここを追加
                           children: [
                             CircleAvatar(
-                              backgroundImage: NetworkImage(author['avatar']),
+                              backgroundImage:
+                                  NetworkImage(author['avatar'] ?? ''),
                               radius: 24,
                             ),
                             const SizedBox(width: 8.0),
