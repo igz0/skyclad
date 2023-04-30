@@ -150,7 +150,7 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
     final bluesky = bsky.Bluesky.fromSession(session.data);
     final feeds = await bluesky.feeds.findTimeline(limit: 100);
 
-    // Convert the feeds to JSON
+    // タイムラインのJSONを取得する
     final jsonFeeds = feeds.data.toJson()['feed'];
 
     return jsonFeeds;
