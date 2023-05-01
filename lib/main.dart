@@ -238,9 +238,16 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
     if (feed['reason'] != null &&
         feed['reason']['\$type'] == 'app.bsky.feed.defs#reasonRepost') {
       final repostedBy = feed['reason']['by'];
-      return Text(
-        'Reposted by @${repostedBy['displayName']}',
-        style: const TextStyle(color: Colors.white38, fontSize: 12.0),
+      return Column(children: [
+        Text(
+          'Reposted by @${repostedBy['displayName']}',
+          style: const TextStyle(color: Colors.white38, fontSize: 12.0),
+        ),
+        const SizedBox(height: 8.0),
+      ]);
+    }
+    return const SizedBox.shrink();
+  }
       );
     }
     return const SizedBox.shrink();
