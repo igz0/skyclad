@@ -1,7 +1,11 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:linkify/linkify.dart';
+import 'package:flutter/gestures.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PostDetails extends StatefulWidget {
   final Map<String, dynamic> post;
@@ -21,6 +25,244 @@ class _PostDetailsState extends State<PostDetails> {
   void initState() {
     super.initState();
     _post = widget.post;
+  }
+
+  // 画像をダイアログで表示する
+  void _showImageDialog(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        final screenHeight = MediaQuery.of(context).size.height;
+        return AlertDialog(
+          contentPadding: EdgeInsets.zero,
+          insetPadding: EdgeInsets.zero,
+          content: Stack(
+            children: [
+              Center(
+                // 画像を縦方向にスワイプして閉じるようにする
+                child: Dismissible(
+                  key: UniqueKey(),
+                  direction: DismissDirection.vertical,
+                  onDismissed: (direction) {
+                    Navigator.pop(context);
+                  },
+                  child: Image.network(
+                    imageUrl,
+                    width: screenWidth,
+                    height: screenHeight,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: const Icon(Icons.close, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPostContent(Map<String, dynamic> post) {
+    List<Widget> contentWidgets = [];
+
+    // 投稿文を追加する
+    final elements = linkify(post['record']['text'],
+        options: const LinkifyOptions(humanize: false));
+    final List<InlineSpan> spans = [];
+    for (final element in elements) {
+      if (element is TextElement) {
+        spans.add(TextSpan(text: element.text));
+      } else if (element is UrlElement) {
+        spans.add(TextSpan(
+          text: element.text,
+          style: const TextStyle(color: Colors.blue),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () async {
+              final messenger = ScaffoldMessenger.of(context);
+              if (await canLaunchUrl(Uri.parse(element.url))) {
+                await launchUrl(Uri.parse(element.url),
+                    mode: LaunchMode.externalApplication);
+              } else {
+                messenger.showSnackBar(
+                  const SnackBar(content: Text("リンクを開けませんでした。")),
+                );
+              }
+            },
+        ));
+      }
+    }
+
+    contentWidgets.add(
+      RichText(
+        text: TextSpan(
+          children: spans,
+          style: const TextStyle(fontSize: 16.0, color: Colors.white),
+        ),
+      ),
+    );
+
+    // 投稿に画像が含まれていたら追加する
+    if (post['embed'] != null &&
+        post['embed']['\$type'] == 'app.bsky.embed.images#view') {
+      contentWidgets.add(const SizedBox(height: 10.0));
+
+      // 画像ウィジェットを作成する
+      List<Widget> imageWidgets = post['embed']['images'].map<Widget>((image) {
+        return GestureDetector(
+          onTap: () => _showImageDialog(context, image['fullsize']),
+          child: Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8.0),
+              child: Image.network(
+                image['thumb'],
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        );
+      }).toList();
+
+      // 画像ウィジェットに水平スクロールを追加する
+      contentWidgets.add(
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: imageWidgets,
+          ),
+        ),
+      );
+    }
+
+    // 引用投稿が含まれていたら追加する
+    contentWidgets.add(_buildQuotedPost(post));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: contentWidgets,
+    );
+  }
+
+  Widget _buildRepostedBy(Map<String, dynamic> feed) {
+    if (feed['reason'] != null &&
+        feed['reason']['\$type'] == 'app.bsky.feed.defs#reasonRepost') {
+      final repostedBy = feed['reason']['by'];
+      return Column(children: [
+        Text(
+          'Reposted by @${repostedBy['displayName']}',
+          style: const TextStyle(color: Colors.white38, fontSize: 12.0),
+        ),
+        const SizedBox(height: 8.0),
+      ]);
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildRepliedBy(Map<String, dynamic> feed) {
+    if (feed['reply'] != null) {
+      final repliedTo = feed['reply']['parent']['author'];
+      return Column(
+        children: [
+          Text(
+            'Reply to ${repliedTo['displayName']}',
+            style: const TextStyle(color: Colors.white38, fontSize: 12.0),
+          ),
+          const SizedBox(height: 8.0),
+        ],
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildQuotedPost(Map<String, dynamic> post) {
+    if (post['embed'] != null &&
+        post['embed']['\$type'] == 'app.bsky.embed.record#view') {
+      final quotedPost = post['embed']['record'];
+      final quotedAuthor = quotedPost['author'];
+      final createdAt = DateTime.parse(quotedPost['indexedAt']).toLocal();
+
+      return InkWell(
+        onTap: () async {
+          final uri = quotedPost['uri'];
+
+          // 既存の_fetchTimelineメソッドの内容をここに移動
+          final session = await bsky.createSession(
+            identifier: dotenv.get('BLUESKY_ID'),
+            password: dotenv.get('BLUESKY_PASSWORD'),
+          );
+          final bluesky = bsky.Bluesky.fromSession(session.data);
+          final feeds =
+              await bluesky.feeds.findPosts(uris: [bsky.AtUri.parse(uri)]);
+
+          // 引用投稿先のJSONを取得する
+          final jsonFeed = feeds.data.toJson()['posts'][0];
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PostDetails(post: jsonFeed),
+            ),
+          );
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.white38),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.all(8.0),
+          margin: const EdgeInsets.only(top: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Text(
+                      quotedAuthor['displayName'] ?? '',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 13.0, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Flexible(
+                    child: Text(
+                      '@${quotedAuthor['handle']}',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Colors.white38, fontSize: 12.0),
+                    ),
+                  ),
+                  Text(
+                    timeago.format(createdAt, locale: "ja"),
+                    style: const TextStyle(fontSize: 12.0),
+                    overflow: TextOverflow.clip,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10.0),
+              Text(
+                quotedPost['value']['text'] ?? '',
+                style: const TextStyle(fontSize: 14.0),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   @override
@@ -48,6 +290,8 @@ class _PostDetailsState extends State<PostDetails> {
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
+                _buildRepostedBy(_post),
+                _buildRepliedBy(_post),
                 CircleAvatar(
                   backgroundImage:
                       NetworkImage(_post['author']['avatar'] ?? ''),
@@ -70,10 +314,7 @@ class _PostDetailsState extends State<PostDetails> {
               ],
             ),
             const SizedBox(height: 10.0),
-            SelectableText(
-              _post['record']['text'],
-              style: const TextStyle(fontSize: 16.0),
-            ),
+            _buildPostContent(_post),
             const SizedBox(height: 15.0),
             Text(
               dateStr,
