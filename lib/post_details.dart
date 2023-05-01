@@ -1,18 +1,38 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:bluesky/bluesky.dart' as bsky;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-class PostDetails extends StatelessWidget {
+class PostDetails extends StatefulWidget {
   final Map<String, dynamic> post;
 
   const PostDetails({required this.post, Key? key}) : super(key: key);
 
   @override
+  _PostDetailsState createState() => _PostDetailsState();
+}
+
+class _PostDetailsState extends State<PostDetails> {
+  Map<String, dynamic> _post;
+
+  _PostDetailsState() : _post = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _post = widget.post;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final author = post['author'];
-    final createdAt = DateTime.parse(post['indexedAt']).toLocal();
+    final author = _post['author'];
+    final createdAt = DateTime.parse(_post['indexedAt']).toLocal();
 
     DateFormat format = DateFormat('yyyy/MM/dd HH:mm');
     String dateStr = format.format(createdAt);
+
+    bool isLiked = _post['viewer']['like'] != null;
+    bool isReposted = _post['viewer']['repost'] != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -62,14 +82,107 @@ class PostDetails extends StatelessWidget {
             const Divider(height: 1, thickness: 1, color: Colors.white12),
             Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
               Column(children: [
-                Text(post['repostCount'].toString()),
-                const Text('リポスト')
+                IconButton(
+                  icon: const Icon(Icons.reply),
+                  onPressed: () {
+                    // TODO: 返信処理
+                  },
+                ),
               ]),
               Column(children: [
-                Text(post['likeCount'].toString()),
-                const Text('いいね')
+                IconButton(
+                  icon: isReposted
+                      ? const Icon(Icons.cached)
+                      : const Icon(Icons.cached_outlined),
+                  color: isReposted ? Colors.green : null,
+                  onPressed: () async {
+                    final session = await bsky.createSession(
+                      identifier: dotenv.get('BLUESKY_ID'),
+                      password: dotenv.get('BLUESKY_PASSWORD'),
+                    );
+                    final bluesky = bsky.Bluesky.fromSession(session.data);
+
+                    if (isReposted) {
+                      // リポストを取り消し
+                      await bluesky.repositories.deleteRecord(
+                        uri: _post['viewer']['repost']['uri'],
+                      );
+                    } else {
+                      // リポスト処理
+                      final repostedRecord = await bluesky.feeds.createRepost(
+                        cid: _post['cid'],
+                        uri: bsky.AtUri.parse(_post['uri']),
+                      );
+                      _post['viewer']
+                          ['repost'] = {'uri': repostedRecord.data.uri};
+                    }
+                    setState(() {
+                      if (isReposted) {
+                        _post['viewer']['repost'] = null;
+                        _post['repostCount'] -= 1;
+                      } else {
+                        _post['repostCount'] += 1;
+                      }
+                    });
+                  },
+                ),
+              ]),
+              Column(children: [
+                IconButton(
+                  icon: isLiked
+                      ? const Icon(Icons.favorite)
+                      : const Icon(Icons.favorite_border),
+                  color: isLiked ? Colors.red : null,
+                  onPressed: () async {
+                    final session = await bsky.createSession(
+                      identifier: dotenv.get('BLUESKY_ID'),
+                      password: dotenv.get('BLUESKY_PASSWORD'),
+                    );
+                    final bluesky = bsky.Bluesky.fromSession(session.data);
+
+                    if (isLiked) {
+                      // いいねを取り消し
+                      await bluesky.repositories.deleteRecord(
+                        uri: _post['viewer']['like']['uri'],
+                      );
+                    } else {
+                      // いいね処理
+                      final likedRecord = await bluesky.feeds.createLike(
+                        cid: _post['cid'],
+                        uri: bsky.AtUri.parse(_post['uri']),
+                      );
+                      _post['viewer']['like'] = {'uri': likedRecord.data.uri};
+                    }
+                    setState(() {
+                      if (isLiked) {
+                        _post['viewer']['like'] = null;
+                        _post['likeCount'] -= 1;
+                      } else {
+                        _post['likeCount'] += 1;
+                      }
+                    });
+                  },
+                ),
               ]),
             ]),
+            const Divider(height: 1, thickness: 1, color: Colors.white12),
+            const SizedBox(height: 10.0),
+            Row(
+              children: [
+                const SizedBox(width: 10.0),
+                Row(
+                  children: [
+                    Text(
+                      '${_post['repostCount'].toString()} リポスト',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(width: 10.0),
+                    Text('${_post['likeCount'].toString()} いいね',
+                        style: const TextStyle(fontSize: 16)),
+                  ],
+                )
+              ],
+            ),
             const SizedBox(height: 10.0),
             const Divider(height: 1, thickness: 1, color: Colors.white12),
           ],
