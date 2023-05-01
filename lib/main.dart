@@ -248,6 +248,18 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
     }
     return const SizedBox.shrink();
   }
+
+  Widget _buildRepliedBy(Map<String, dynamic> feed) {
+    if (feed['reply'] != null) {
+      final repliedTo = feed['reply']['parent']['author'];
+      return Column(
+        children: [
+          Text(
+            'Reply to ${repliedTo['displayName']}',
+            style: const TextStyle(color: Colors.white38, fontSize: 12.0),
+          ),
+          const SizedBox(height: 8.0),
+        ],
       );
     }
     return const SizedBox.shrink();
@@ -400,6 +412,7 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _buildRepostedBy(feed),
+                            _buildRepliedBy(feed),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
