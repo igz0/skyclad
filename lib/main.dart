@@ -283,7 +283,7 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
     return const SizedBox.shrink();
   }
 
-  // 画像をダイアログで表示する
+// 画像をダイアログで表示する
   void _showImageDialog(BuildContext context, String imageUrl) {
     showDialog(
       context: context,
