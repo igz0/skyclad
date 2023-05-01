@@ -254,10 +254,10 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
           ),
         ),
       );
-
-      // 引用投稿が含まれていたら追加する
-      contentWidgets.add(_buildQuotedPost(post));
     }
+
+    // 引用投稿が含まれていたら追加する
+    contentWidgets.add(_buildQuotedPost(post));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -303,48 +303,72 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
       final quotedAuthor = quotedPost['author'];
       final createdAt = DateTime.parse(quotedPost['indexedAt']).toLocal();
 
-      return Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.white38),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        padding: const EdgeInsets.all(8.0),
-        margin: const EdgeInsets.only(top: 8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                  child: Text(
-                    quotedAuthor['displayName'] ?? '',
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        fontSize: 13.0, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Flexible(
-                  child: Text(
-                    '@${quotedAuthor['handle']}',
-                    overflow: TextOverflow.ellipsis,
-                    style:
-                        const TextStyle(color: Colors.white38, fontSize: 12.0),
-                  ),
-                ),
-                Text(
-                  timeago.format(createdAt, locale: "ja"),
-                  style: const TextStyle(fontSize: 12.0),
-                  overflow: TextOverflow.clip,
-                ),
-              ],
+      return InkWell(
+        onTap: () async {
+          final uri = quotedPost['uri'];
+
+          // 既存の_fetchTimelineメソッドの内容をここに移動
+          final session = await bsky.createSession(
+            identifier: dotenv.get('BLUESKY_ID'),
+            password: dotenv.get('BLUESKY_PASSWORD'),
+          );
+          final bluesky = bsky.Bluesky.fromSession(session.data);
+          final feeds =
+              await bluesky.feeds.findPosts(uris: [bsky.AtUri.parse(uri)]);
+
+          // 引用投稿先のJSONを取得する
+          final jsonFeed = feeds.data.toJson()['posts'][0];
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PostDetails(post: jsonFeed),
             ),
-            const SizedBox(height: 10.0),
-            Text(
-              quotedPost['record']['text'],
-              style: const TextStyle(fontSize: 14.0),
-            ),
-          ],
+          );
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.white38),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.all(8.0),
+          margin: const EdgeInsets.only(top: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Text(
+                      quotedAuthor['displayName'] ?? '',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 13.0, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Flexible(
+                    child: Text(
+                      '@${quotedAuthor['handle']}',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Colors.white38, fontSize: 12.0),
+                    ),
+                  ),
+                  Text(
+                    timeago.format(createdAt, locale: "ja"),
+                    style: const TextStyle(fontSize: 12.0),
+                    overflow: TextOverflow.clip,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10.0),
+              Text(
+                quotedPost['value']['text'] ?? '',
+                style: const TextStyle(fontSize: 14.0),
+              ),
+            ],
+          ),
         ),
       );
     }
