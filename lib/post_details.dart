@@ -69,7 +69,7 @@ class _PostDetailsState extends State<PostDetails> {
               ],
             ),
             const SizedBox(height: 10.0),
-            Text(
+            SelectableText(
               _post['record']['text'],
               style: const TextStyle(fontSize: 16.0),
             ),
