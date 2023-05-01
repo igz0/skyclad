@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:linkify/linkify.dart';
+import 'package:flutter/gestures.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // 別スクリーン
 import 'package:skyclad/post_details.dart';
@@ -183,10 +186,38 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
     List<Widget> contentWidgets = [];
 
     // 投稿文を追加する
+    final elements = linkify(post['record']['text'],
+        options: const LinkifyOptions(humanize: false));
+    final List<InlineSpan> spans = [];
+    for (final element in elements) {
+      if (element is TextElement) {
+        spans.add(TextSpan(text: element.text));
+      } else if (element is UrlElement) {
+        spans.add(TextSpan(
+          text: element.text,
+          style: const TextStyle(color: Colors.blue),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () async {
+              final messenger = ScaffoldMessenger.of(context);
+              if (await canLaunchUrl(Uri.parse(element.url))) {
+                await launchUrl(Uri.parse(element.url),
+                    mode: LaunchMode.externalApplication);
+              } else {
+                messenger.showSnackBar(
+                  const SnackBar(content: Text("リンクを開けませんでした。")),
+                );
+              }
+            },
+        ));
+      }
+    }
+
     contentWidgets.add(
-      Text(
-        post['record']['text'],
-        style: const TextStyle(fontSize: 15.0),
+      RichText(
+        text: TextSpan(
+          children: spans,
+          style: const TextStyle(fontSize: 15.0, color: Colors.white),
+        ),
       ),
     );
 

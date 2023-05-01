@@ -38,6 +38,8 @@ dependencies:
   timeago: ^3.4.0
   intl: ^0.18.1
   flutter_dotenv: ^5.0.2
+  linkify: ^4.1.0
+  url_launcher: ^6.1.10
 
 dev_dependencies:
   flutter_test:
