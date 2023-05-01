@@ -296,11 +296,19 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
           content: Stack(
             children: [
               Center(
-                child: Image.network(
-                  imageUrl,
-                  width: screenWidth,
-                  height: screenHeight,
-                  fit: BoxFit.contain,
+                // 画像を縦方向にスワイプして閉じるようにする
+                child: Dismissible(
+                  key: UniqueKey(),
+                  direction: DismissDirection.vertical,
+                  onDismissed: (direction) {
+                    Navigator.pop(context);
+                  },
+                  child: Image.network(
+                    imageUrl,
+                    width: screenWidth,
+                    height: screenHeight,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
               Positioned(
