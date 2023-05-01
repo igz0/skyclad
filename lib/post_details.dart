@@ -411,22 +411,47 @@ class _PostDetailsState extends State<PostDetails> {
             const SizedBox(height: 10.0),
             Row(
               children: [
-                const SizedBox(width: 10.0),
+                const SizedBox(width: 30.0),
                 Row(
                   children: [
-                    Text(
-                      '${_post['repostCount'].toString()} リポスト',
-                      style: const TextStyle(fontSize: 15),
-                    ),
                     const SizedBox(width: 10.0),
-                    Text('${_post['likeCount'].toString()} いいね',
-                        style: const TextStyle(fontSize: 15)),
+                    Column(
+                      children: [
+                        Text(
+                          _post['repostCount'].toString(),
+                          style: const TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 2.0),
+                        const Text(
+                          'リポスト',
+                          style: TextStyle(fontSize: 12, color: Colors.white60),
+                        )
+                      ],
+                    ),
+                    const SizedBox(width: 43.0),
+                    Container(
+                      height: 50,
+                      child: const VerticalDivider(
+                          width: 1, thickness: 1, color: Colors.white38),
+                    ),
+                    const SizedBox(width: 43.0),
+                    Column(
+                      children: [
+                        Text(_post['likeCount'].toString(),
+                            style: const TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 2.0),
+                        const Text('いいね',
+                            style:
+                                TextStyle(fontSize: 12, color: Colors.white60)),
+                      ],
+                    )
                   ],
                 )
               ],
             ),
             const SizedBox(height: 10.0),
-            const Divider(height: 1, thickness: 1, color: Colors.white12),
           ],
         ),
       ),
