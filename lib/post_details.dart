@@ -50,17 +50,16 @@ class PostDetails extends StatelessWidget {
             ),
             const SizedBox(height: 10.0),
             Text(
-              post['record']['text'],
-              style: const TextStyle(fontSize: 15.0),
+              _post['record']['text'],
+              style: const TextStyle(fontSize: 16.0),
             ),
             const SizedBox(height: 15.0),
             Text(
               dateStr,
-              style: const TextStyle(fontSize: 12.0, color: Colors.white38),
+              style: const TextStyle(fontSize: 14.0, color: Colors.white38),
             ),
             const SizedBox(height: 10.0),
             const Divider(height: 1, thickness: 1, color: Colors.white12),
-            const SizedBox(height: 10.0),
             Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
               Column(children: [
                 Text(post['repostCount'].toString()),
