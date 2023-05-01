@@ -254,14 +254,16 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
                   child: Text(
                     quotedAuthor['displayName'] ?? '',
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 15.0),
+                    style: const TextStyle(
+                        fontSize: 13.0, fontWeight: FontWeight.bold),
                   ),
                 ),
                 Flexible(
                   child: Text(
                     '@${quotedAuthor['handle']}',
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white38),
+                    style:
+                        const TextStyle(color: Colors.white38, fontSize: 12.0),
                   ),
                 ),
                 Text(
@@ -274,7 +276,7 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
             const SizedBox(height: 10.0),
             Text(
               quotedPost['record']['text'],
-              style: const TextStyle(fontSize: 15.0),
+              style: const TextStyle(fontSize: 14.0),
             ),
           ],
         ),
@@ -380,8 +382,9 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
                                           child: Text(
                                             author['displayName'] ?? '',
                                             overflow: TextOverflow.ellipsis,
-                                            style:
-                                                const TextStyle(fontSize: 15.0),
+                                            style: const TextStyle(
+                                                fontSize: 14.0,
+                                                fontWeight: FontWeight.bold),
                                           ),
                                         ),
                                         Flexible(

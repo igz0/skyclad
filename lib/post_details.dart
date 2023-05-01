@@ -58,7 +58,8 @@ class _PostDetailsState extends State<PostDetails> {
                   Text(
                     author['displayName'] ?? '',
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 15.0),
+                    style: const TextStyle(
+                        fontSize: 15.0, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     '@${author['handle']}',
@@ -174,11 +175,11 @@ class _PostDetailsState extends State<PostDetails> {
                   children: [
                     Text(
                       '${_post['repostCount'].toString()} リポスト',
-                      style: const TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 15),
                     ),
                     const SizedBox(width: 10.0),
                     Text('${_post['likeCount'].toString()} いいね',
-                        style: const TextStyle(fontSize: 16)),
+                        style: const TextStyle(fontSize: 15)),
                   ],
                 )
               ],
