@@ -26,27 +26,26 @@ class PostDetails extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 CircleAvatar(
-                  backgroundImage: NetworkImage(post['author']['avatar']),
+                  backgroundImage:
+                      NetworkImage(_post['author']['avatar'] ?? ''),
                   radius: 20,
                 ),
                 const SizedBox(width: 10.0),
-                Flexible(
-                  child: Text(
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(
                     author['displayName'] ?? '',
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 15.0),
                   ),
-                ),
-                Flexible(
-                  child: Text(
+                  Text(
                     '@${author['handle']}',
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(color: Colors.white38),
                   ),
-                ),
+                ]),
               ],
             ),
             const SizedBox(height: 10.0),
