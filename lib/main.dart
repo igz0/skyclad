@@ -132,17 +132,40 @@ class BlueskyTimeline extends StatefulWidget {
 }
 
 class BlueskyTimelineState extends State<BlueskyTimeline> {
-  late Future<List<dynamic>> _timelineFuture;
+  List<dynamic> _timelineData = [];
+  bool _isLoading = true;
+  bool _isRefreshing = false;
 
   // 初期化処理
   @override
   void initState() {
     super.initState();
-    _timelineFuture = _fetchTimeline();
+    _fetchTimeline();
   }
 
   // タイムラインを取得する
-  Future<List<dynamic>> _fetchTimeline() async {
+  Future<void> _fetchTimeline() async {
+    final data = await _fetchTimelineData();
+    setState(() {
+      _timelineData = data;
+      _isLoading = false;
+    });
+  }
+
+  // タイムラインを更新する
+  Future<void> _refreshTimeline() async {
+    setState(() {
+      _isRefreshing = true;
+    });
+    final data = await _fetchTimelineData();
+    setState(() {
+      _timelineData = data;
+      _isRefreshing = false;
+    });
+  }
+
+  Future<List<dynamic>> _fetchTimelineData() async {
+    // 既存の_fetchTimelineメソッドの内容をここに移動
     final session = await bsky.createSession(
       identifier: dotenv.get('BLUESKY_ID'),
       password: dotenv.get('BLUESKY_PASSWORD'),
@@ -154,13 +177,6 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
     final jsonFeeds = feeds.data.toJson()['feed'];
 
     return jsonFeeds;
-  }
-
-  // タイムラインを更新する
-  Future<void> _refreshTimeline() async {
-    setState(() {
-      _timelineFuture = _fetchTimeline();
-    });
   }
 
   Widget _buildPostContent(Map<String, dynamic> post) {
@@ -333,98 +349,89 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
   // タイムラインを表示する
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<dynamic>>(
-      future: _timelineFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.hasData) {
-            return RefreshIndicator(
-              onRefresh: _refreshTimeline,
-              child: ListView.builder(
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) {
-                  final feed = snapshot.data![index];
-                  final post = feed['post'];
-                  final author = post['author'];
-                  final createdAt = DateTime.parse(post['indexedAt']).toLocal();
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-                  return Column(children: [
-                    InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PostDetails(post: post),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start, // ここを追加
-                          children: [
-                            CircleAvatar(
-                              backgroundImage:
-                                  NetworkImage(author['avatar'] ?? ''),
-                              radius: 24,
-                            ),
-                            const SizedBox(width: 8.0),
-                            Flexible(
-                              child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _buildRepostedBy(feed),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            author['displayName'] ?? '',
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                                fontSize: 14.0,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                        Flexible(
-                                          child: Text(
-                                            '@${author['handle']}',
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                                color: Colors.white38),
-                                          ),
-                                        ),
-                                        Text(
-                                          timeago.format(createdAt,
-                                              locale: "ja"),
-                                          style:
-                                              const TextStyle(fontSize: 12.0),
-                                          overflow: TextOverflow.clip,
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 10.0),
-                                    _buildPostContent(post),
-                                  ]),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const Divider(
-                        height: 1, thickness: 1, color: Colors.white12)
-                  ]);
-                },
-              ),
-            );
-          } else {
-            return const Center(child: Text('タイムラインの取得に失敗しました'));
-          }
-        } else {
-          return const Center(child: CircularProgressIndicator());
+    return RefreshIndicator(
+      onRefresh: () async {
+        if (!_isRefreshing) {
+          await _refreshTimeline();
         }
       },
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: _timelineData.length,
+        itemBuilder: (context, index) {
+          final feed = _timelineData[index];
+          final post = feed['post'];
+          final author = post['author'];
+          final createdAt = DateTime.parse(post['indexedAt']).toLocal();
+
+          return Column(children: [
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PostDetails(post: post),
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start, // ここを追加
+                  children: [
+                    CircleAvatar(
+                      backgroundImage: NetworkImage(author['avatar'] ?? ''),
+                      radius: 24,
+                    ),
+                    const SizedBox(width: 8.0),
+                    Flexible(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildRepostedBy(feed),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    author['displayName'] ?? '',
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                        fontSize: 14.0,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Flexible(
+                                  child: Text(
+                                    '@${author['handle']}',
+                                    overflow: TextOverflow.ellipsis,
+                                    style:
+                                        const TextStyle(color: Colors.white38),
+                                  ),
+                                ),
+                                Text(
+                                  timeago.format(createdAt, locale: "ja"),
+                                  style: const TextStyle(fontSize: 12.0),
+                                  overflow: TextOverflow.clip,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10.0),
+                            _buildPostContent(post),
+                          ]),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const Divider(height: 1, thickness: 1, color: Colors.white12)
+          ]);
+        },
+      ),
     );
   }
 }
