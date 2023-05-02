@@ -7,6 +7,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 // ウィジェット
 import 'package:skyclad/widgets/post_widget.dart';
 
+// 別スクリーン
+import 'package:skyclad/post_details.dart';
+
 class UserProfileScreen extends StatefulWidget {
   final String actor;
 
@@ -131,65 +134,75 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final author = post['author'];
     final createdAt = DateTime.parse(post['indexedAt']).toLocal();
 
-    return Container(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => UserProfileScreen(
-                            actor: author['handle'],
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PostDetails(post: post),
+          ),
+        );
+      },
+      child: Column(
+        children: [
+          const Divider(height: 0),
+          const SizedBox(height: 10.0),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserProfileScreen(
+                          actor: author['handle'],
+                        ),
+                      ),
+                    );
+                  },
+                  child: CircleAvatar(
+                    backgroundImage: NetworkImage(author['avatar'] ?? ''),
+                    radius: 24,
+                  )),
+              const SizedBox(width: 8.0),
+              Flexible(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              author['displayName'] ?? '',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontSize: 14.0, fontWeight: FontWeight.bold),
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                    child: CircleAvatar(
-                      backgroundImage: NetworkImage(author['avatar'] ?? ''),
-                      radius: 24,
-                    )),
-                const SizedBox(width: 8.0),
-                Flexible(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                author['displayName'] ?? '',
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    fontSize: 14.0,
-                                    fontWeight: FontWeight.bold),
-                              ),
+                          Flexible(
+                            child: Text(
+                              '@${author['handle']}',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.white38),
                             ),
-                            Flexible(
-                              child: Text(
-                                '@${author['handle']}',
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: Colors.white38),
-                              ),
-                            ),
-                            Text(
-                              timeago.format(createdAt, locale: "ja"),
-                              style: const TextStyle(fontSize: 12.0),
-                              overflow: TextOverflow.clip,
-                            ),
-                          ],
-                        ),
-                        PostWidget(post: post), // これを使用します。
-                      ]),
-                ),
-              ],
-            ),
-          ],
-        ));
+                          ),
+                          Text(
+                            timeago.format(createdAt, locale: "ja"),
+                            style: const TextStyle(fontSize: 12.0),
+                            overflow: TextOverflow.clip,
+                          ),
+                        ],
+                      ),
+                      PostWidget(post: post), // これを使用します。
+                    ]),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10.0),
+        ],
+      ),
+    );
   }
 }
