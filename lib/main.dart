@@ -273,11 +273,11 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
         feed['reason']['\$type'] == 'app.bsky.feed.defs#reasonRepost') {
       final repostedBy = feed['reason']['by'];
       return Column(children: [
+        const SizedBox(height: 8.0),
         Text(
           'Reposted by @${repostedBy['displayName']}',
           style: const TextStyle(color: Colors.white38, fontSize: 12.0),
         ),
-        const SizedBox(height: 8.0),
       ]);
     }
     return const SizedBox.shrink();
@@ -288,11 +288,11 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
       final repliedTo = feed['reply']['parent']['author'];
       return Column(
         children: [
+          const SizedBox(height: 8.0),
           Text(
             'Reply to ${repliedTo['displayName']}',
             style: const TextStyle(color: Colors.white38, fontSize: 12.0),
           ),
-          const SizedBox(height: 8.0),
         ],
       );
     }
@@ -465,55 +465,60 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
                 );
               },
               child: Container(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start, // ここを追加
-                  children: [
-                    CircleAvatar(
-                      backgroundImage: NetworkImage(author['avatar'] ?? ''),
-                      radius: 24,
-                    ),
-                    const SizedBox(width: 8.0),
-                    Flexible(
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildRepostedBy(feed),
-                            _buildRepliedBy(feed),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    author['displayName'] ?? '',
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                        fontSize: 14.0,
-                                        fontWeight: FontWeight.bold),
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start, // ここを追加
+                        children: [
+                          CircleAvatar(
+                            backgroundImage:
+                                NetworkImage(author['avatar'] ?? ''),
+                            radius: 24,
+                          ),
+                          const SizedBox(width: 8.0),
+                          Flexible(
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          author['displayName'] ?? '',
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                              fontSize: 14.0,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      Flexible(
+                                        child: Text(
+                                          '@${author['handle']}',
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                              color: Colors.white38),
+                                        ),
+                                      ),
+                                      Text(
+                                        timeago.format(createdAt, locale: "ja"),
+                                        style: const TextStyle(fontSize: 12.0),
+                                        overflow: TextOverflow.clip,
+                                      ),
+                                    ],
                                   ),
-                                ),
-                                Flexible(
-                                  child: Text(
-                                    '@${author['handle']}',
-                                    overflow: TextOverflow.ellipsis,
-                                    style:
-                                        const TextStyle(color: Colors.white38),
-                                  ),
-                                ),
-                                Text(
-                                  timeago.format(createdAt, locale: "ja"),
-                                  style: const TextStyle(fontSize: 12.0),
-                                  overflow: TextOverflow.clip,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10.0),
-                            _buildPostContent(post),
-                          ]),
-                    ),
-                  ],
-                ),
-              ),
+                                  const SizedBox(height: 10.0),
+                                  _buildPostContent(post),
+                                  _buildRepostedBy(feed),
+                                  _buildRepliedBy(feed)
+                                ]),
+                          ),
+                        ],
+                      ),
+                    ],
+                  )),
             ),
             const Divider(height: 1, thickness: 1, color: Colors.white12)
           ]);
