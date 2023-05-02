@@ -99,7 +99,7 @@ class MyApp extends StatelessWidget {
                   await _createPost(postController.text.trim());
                   postController.clear();
 
-                  // Call the callback
+                  // コールバックを呼び出してタイムラインを更新
                   blueskyTimelineKey.currentState!._refreshTimeline();
                 }
               },
@@ -142,7 +142,7 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
   bool _isRefreshing = false;
   bool _isFetchingMore = false;
   String? _nextCursor;
-  bool _hasMoreData = true; // この行を追加
+  final bool _hasMoreData = true; // この行を追加
   final ScrollController _scrollController = ScrollController();
 
   // 初期化処理
@@ -155,7 +155,6 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
 
   @override
   void dispose() {
-    // 以下を追加
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     super.dispose();
@@ -193,7 +192,6 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
 
   Future<void> _loadMoreTimelineData() async {
     if (!_isFetchingMore && _hasMoreData) {
-      // _hasMoreData を追加
       setState(() {
         _isFetchingMore = true;
       });
@@ -224,15 +222,11 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
     // カーソルを更新
     _cursor = feeds.data.toJson()['cursor'];
 
-    // もしカーソルが null なら、これ以上データがないと判断
-    if (_cursor == null) {
-      _hasMoreData = false;
-    }
-
     // タイムラインのフィードとカーソルを返す
     return {'feed': jsonFeeds, 'cursor': _cursor};
   }
 
+  // 投稿のウィジェットを作成する
   Widget _buildPostContent(Map<String, dynamic> post) {
     List<Widget> contentWidgets = [];
 
@@ -240,6 +234,8 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
     final elements = linkify(post['record']['text'],
         options: const LinkifyOptions(humanize: false));
     final List<InlineSpan> spans = [];
+
+    // 投稿文の要素をウィジェットに変換する
     for (final element in elements) {
       if (element is TextElement) {
         spans.add(TextSpan(text: element.text));
@@ -263,6 +259,7 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
       }
     }
 
+    // 投稿文をウィジェットに追加する
     contentWidgets.add(
       RichText(
         text: TextSpan(
@@ -318,6 +315,7 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
     );
   }
 
+  // 投稿がリポストだった場合にリポストであることを表記したウィジェットを作成する
   Widget _buildRepostedBy(Map<String, dynamic> feed) {
     if (feed['reason'] != null &&
         feed['reason']['\$type'] == 'app.bsky.feed.defs#reasonRepost') {
@@ -333,6 +331,7 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
     return const SizedBox.shrink();
   }
 
+  // 投稿がリプライだった場合にリプライであることを表記したウィジェットを作成する
   Widget _buildRepliedBy(Map<String, dynamic> feed) {
     if (feed['reply'] != null) {
       final repliedTo = feed['reply']['parent']['author'];
@@ -349,6 +348,7 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
     return const SizedBox.shrink();
   }
 
+  // 引用投稿のウィジェットを作成する
   Widget _buildQuotedPost(Map<String, dynamic> post) {
     if (post['embed'] != null &&
         post['embed']['\$type'] == 'app.bsky.embed.record#view') {
@@ -360,7 +360,6 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
         onTap: () async {
           final uri = quotedPost['uri'];
 
-          // 既存の_fetchTimelineメソッドの内容をここに移動
           final session = await bsky.createSession(
             identifier: dotenv.get('BLUESKY_ID'),
             password: dotenv.get('BLUESKY_PASSWORD'),
