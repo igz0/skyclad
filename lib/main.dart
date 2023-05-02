@@ -14,15 +14,17 @@ import 'package:skyclad/notifications.dart';
 void main() async {
   await dotenv.load(fileName: '.env');
   timeago.setLocaleMessages("ja", timeago.JaMessages());
-  runApp(MaterialApp(home: MyApp()));
+  runApp(const MaterialApp(home: MyApp()));
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
-  _MyAppState createState() => _MyAppState();
+  MyAppState createState() => MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class MyAppState extends State<MyApp> {
   final GlobalKey<BlueskyTimelineState> blueskyTimelineKey =
       GlobalKey<BlueskyTimelineState>();
   int currentIndex = 0;
@@ -168,7 +170,6 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
   List<dynamic> _timelineData = [];
   String _cursor = "";
   bool _isLoading = true;
-  bool _isRefreshing = false;
   bool _isFetchingMore = false;
   String? _nextCursor;
   final bool _hasMoreData = true; // この行を追加
@@ -199,16 +200,12 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
     });
   }
 
-// タイムラインを更新する
+  // タイムラインを更新する
   Future<void> _refreshTimeline() async {
-    setState(() {
-      _isRefreshing = true;
-    });
     final data = await _fetchTimelineData();
     setState(() {
       _timelineData = data['feed'];
       _cursor = data['cursor'];
-      _isRefreshing = false;
     });
   }
 
@@ -219,6 +216,7 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
     }
   }
 
+  // タイムラインデータを追加で取得する
   Future<void> _loadMoreTimelineData() async {
     if (!_isFetchingMore && _hasMoreData) {
       setState(() {
@@ -382,6 +380,21 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
     return const SizedBox.shrink();
   }
 
+  // 引用投稿先のJSONを取得する
+  Future<Map<String, dynamic>> _fetchQuotedPost(String uri) async {
+    final session = await bsky.createSession(
+      identifier: dotenv.get('BLUESKY_ID'),
+      password: dotenv.get('BLUESKY_PASSWORD'),
+    );
+    final bluesky = bsky.Bluesky.fromSession(session.data);
+    final feeds = await bluesky.feeds.findPosts(uris: [bsky.AtUri.parse(uri)]);
+
+    // 引用投稿先のJSONを取得する
+    final jsonFeed = feeds.data.toJson()['posts'][0];
+
+    return jsonFeed;
+  }
+
   // 引用投稿のウィジェットを作成する
   Widget _buildQuotedPost(Map<String, dynamic> post) {
     if (post['embed'] != null &&
@@ -391,24 +404,23 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
       final createdAt = DateTime.parse(quotedPost['indexedAt']).toLocal();
 
       return InkWell(
-        onTap: () async {
-          final uri = quotedPost['uri'];
-
-          final session = await bsky.createSession(
-            identifier: dotenv.get('BLUESKY_ID'),
-            password: dotenv.get('BLUESKY_PASSWORD'),
-          );
-          final bluesky = bsky.Bluesky.fromSession(session.data);
-          final feeds =
-              await bluesky.feeds.findPosts(uris: [bsky.AtUri.parse(uri)]);
-
-          // 引用投稿先のJSONを取得する
-          final jsonFeed = feeds.data.toJson()['posts'][0];
-
+        onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PostDetails(post: jsonFeed),
+              builder: (context) => FutureBuilder(
+                future: _fetchQuotedPost(quotedPost['uri']),
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    }
+                    return PostDetails(post: snapshot.data);
+                  } else {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                },
+              ),
             ),
           );
         },
