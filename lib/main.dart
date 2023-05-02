@@ -10,6 +10,7 @@ import 'package:card_swiper/card_swiper.dart';
 // 別スクリーン
 import 'package:skyclad/post_details.dart';
 import 'package:skyclad/notifications.dart';
+import 'package:skyclad/user_profile.dart';
 
 void main() async {
   await dotenv.load(fileName: '.env');
@@ -38,12 +39,8 @@ class MyAppState extends State<MyApp> {
     _pages = [
       BlueskyTimeline(timelineKey: blueskyTimelineKey),
       const Placeholder(),
-      NotificationScreen(onTap: (int index) {
-        setState(() {
-          currentIndex = index;
-        });
-      }),
-      const Placeholder(),
+      NotificationScreen(),
+      UserProfileScreen(actor: dotenv.get('BLUESKY_ID')),
     ];
   }
 
@@ -574,11 +571,22 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CircleAvatar(
-                            backgroundImage:
-                                NetworkImage(author['avatar'] ?? ''),
-                            radius: 24,
-                          ),
+                          GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => UserProfileScreen(
+                                      actor: author['handle'],
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: CircleAvatar(
+                                backgroundImage:
+                                    NetworkImage(author['avatar'] ?? ''),
+                                radius: 24,
+                              )),
                           const SizedBox(width: 8.0),
                           Flexible(
                             child: Column(

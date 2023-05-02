@@ -1,12 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 
 class NotificationScreen extends StatefulWidget {
-  final Function(int) onTap;
-
-  NotificationScreen({Key? key, required this.onTap}) : super(key: key);
+  NotificationScreen({Key? key}) : super(key: key);
 
   @override
   _NotificationScreenState createState() => _NotificationScreenState();

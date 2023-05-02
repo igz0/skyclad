@@ -8,6 +8,8 @@ import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:card_swiper/card_swiper.dart';
 
+import 'package:skyclad/user_profile.dart';
+
 class PostDetails extends StatefulWidget {
   final Map<String, dynamic> post;
 
@@ -314,10 +316,22 @@ class _PostDetailsState extends State<PostDetails> {
               children: [
                 _buildRepostedBy(_post),
                 _buildRepliedBy(_post),
-                CircleAvatar(
-                  backgroundImage:
-                      NetworkImage(_post['author']['avatar'] ?? ''),
-                  radius: 20,
+                GestureDetector(
+                  onTap: () async {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserProfileScreen(
+                          actor: _post['author']['handle'],
+                        ),
+                      ),
+                    );
+                  },
+                  child: CircleAvatar(
+                    backgroundImage:
+                        NetworkImage(_post['author']['avatar'] ?? ''),
+                    radius: 20,
+                  ),
                 ),
                 const SizedBox(width: 10.0),
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
