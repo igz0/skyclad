@@ -19,8 +19,6 @@ class PostWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Widget> contentWidgets = [];
 
-    print("post" + post.toString());
-
     // 投稿文を追加する
     final elements = linkify(post['record']['text'],
         options: const LinkifyOptions(humanize: false));
