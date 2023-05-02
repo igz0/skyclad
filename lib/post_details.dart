@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:linkify/linkify.dart';
 import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:card_swiper/card_swiper.dart';
 
 class PostDetails extends StatefulWidget {
   final Map<String, dynamic> post;
@@ -28,30 +29,39 @@ class _PostDetailsState extends State<PostDetails> {
   }
 
   // 画像をダイアログで表示する
-  void _showImageDialog(BuildContext context, String imageUrl) {
+  void _showImageDialog(BuildContext context, List<String> imageUrls) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         final screenWidth = MediaQuery.of(context).size.width;
         final screenHeight = MediaQuery.of(context).size.height;
+
         return AlertDialog(
           contentPadding: EdgeInsets.zero,
           insetPadding: EdgeInsets.zero,
           content: Stack(
             children: [
-              Center(
-                // 画像を縦方向にスワイプして閉じるようにする
+              MediaQuery(
+                data: MediaQuery.of(context),
                 child: Dismissible(
                   key: UniqueKey(),
                   direction: DismissDirection.vertical,
                   onDismissed: (direction) {
                     Navigator.pop(context);
                   },
-                  child: Image.network(
-                    imageUrl,
+                  child: SizedBox(
                     width: screenWidth,
                     height: screenHeight,
-                    fit: BoxFit.contain,
+                    child: Swiper(
+                      itemBuilder: (BuildContext context, int index) {
+                        return Image.network(
+                          imageUrls[index],
+                          fit: BoxFit.contain,
+                        );
+                      },
+                      itemCount: imageUrls.length,
+                      loop: false,
+                    ),
                   ),
                 ),
               ),
@@ -117,30 +127,32 @@ class _PostDetailsState extends State<PostDetails> {
       contentWidgets.add(const SizedBox(height: 10.0));
 
       // 画像ウィジェットを作成する
-      List<Widget> imageWidgets = post['embed']['images'].map<Widget>((image) {
-        return GestureDetector(
-          onTap: () => _showImageDialog(context, image['fullsize']),
-          child: Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8.0),
-              child: Image.network(
-                image['thumb'],
-                width: 100,
-                height: 100,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        );
-      }).toList();
+      List<String> imageUrls = post['embed']['images']
+          .map<String>((dynamic image) => image['fullsize'] as String)
+          .toList();
 
-      // 画像ウィジェットに水平スクロールを追加する
+      // タップで画像ダイアログを表示する
       contentWidgets.add(
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: imageWidgets,
+        GestureDetector(
+          onTap: () => _showImageDialog(context, imageUrls),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: post['embed']['images']
+                  .map<Widget>((image) => Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: Image.network(
+                            image['thumb'],
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ))
+                  .toList(),
+            ),
           ),
         ),
       );
