@@ -9,6 +9,7 @@ import 'package:card_swiper/card_swiper.dart';
 
 // 別スクリーン
 import 'package:skyclad/post_details.dart';
+import 'package:skyclad/notifications.dart';
 
 void main() async {
   await dotenv.load(fileName: '.env');
@@ -16,11 +17,33 @@ void main() async {
   runApp(MaterialApp(home: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   final GlobalKey<BlueskyTimelineState> blueskyTimelineKey =
       GlobalKey<BlueskyTimelineState>();
+  int currentIndex = 0;
+  late List<Widget> _pages;
 
-  MyApp({Key? key}) : super(key: key);
+  final List<String> _appBarTitles = ['Timeline', '検索', '通知', 'プロフィール'];
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      BlueskyTimeline(timelineKey: blueskyTimelineKey),
+      const Placeholder(),
+      NotificationScreen(onTap: (int index) {
+        setState(() {
+          currentIndex = index;
+        });
+      }),
+      const Placeholder(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +53,10 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: const Text('Timeline'),
+          title: Text(_appBarTitles[currentIndex]),
           backgroundColor: Colors.blue[600],
         ),
-        body: BlueskyTimeline(timelineKey: blueskyTimelineKey),
+        body: _pages[currentIndex],
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             _showCreatePostDialog(context);
@@ -61,9 +84,15 @@ class MyApp extends StatelessWidget {
               label: 'プロフィール',
             ),
           ],
+          currentIndex: currentIndex,
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.white38,
           showUnselectedLabels: true,
+          onTap: (int index) {
+            setState(() {
+              currentIndex = index;
+            });
+          },
         ),
       ),
     );
