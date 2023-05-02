@@ -100,7 +100,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          Text(profile['description']),
+          Text(profile['description'] ?? ''),
           const SizedBox(height: 16),
           Row(
             children: [

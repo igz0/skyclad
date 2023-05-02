@@ -46,15 +46,22 @@ class MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    String _appBarTitle = _appBarTitles[currentIndex];
+
+    // ユーザープロフィール画面の場合はAppBarを非表示にする
+    bool _showAppBar = currentIndex != 3; // 追加
+
     return MaterialApp(
       title: 'Skyclad',
       theme: ThemeData.dark(),
       home: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text(_appBarTitles[currentIndex]),
-          backgroundColor: Colors.blue[600],
-        ),
+        appBar: _showAppBar // 追加
+            ? AppBar(
+                centerTitle: true,
+                title: Text(_appBarTitle),
+                backgroundColor: Colors.blue[600],
+              )
+            : null,
         body: _pages[currentIndex],
         floatingActionButton: FloatingActionButton(
           onPressed: () {
