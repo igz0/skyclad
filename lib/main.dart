@@ -137,50 +137,100 @@ class BlueskyTimeline extends StatefulWidget {
 
 class BlueskyTimelineState extends State<BlueskyTimeline> {
   List<dynamic> _timelineData = [];
+  String _cursor = "";
   bool _isLoading = true;
   bool _isRefreshing = false;
+  bool _isFetchingMore = false;
+  String? _nextCursor;
+  bool _hasMoreData = true; // この行を追加
+  final ScrollController _scrollController = ScrollController();
 
   // 初期化処理
   @override
   void initState() {
     super.initState();
     _fetchTimeline();
+    _scrollController.addListener(_scrollListener);
+  }
+
+  @override
+  void dispose() {
+    // 以下を追加
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
+    super.dispose();
   }
 
   // タイムラインを取得する
   Future<void> _fetchTimeline() async {
     final data = await _fetchTimelineData();
     setState(() {
-      _timelineData = data;
+      _timelineData = data['feed'];
+      _nextCursor = data['cursor'];
       _isLoading = false;
     });
   }
 
-  // タイムラインを更新する
+// タイムラインを更新する
   Future<void> _refreshTimeline() async {
     setState(() {
       _isRefreshing = true;
     });
     final data = await _fetchTimelineData();
     setState(() {
-      _timelineData = data;
+      _timelineData = data['feed'];
+      _cursor = data['cursor'];
       _isRefreshing = false;
     });
   }
 
-  Future<List<dynamic>> _fetchTimelineData() async {
+  void _scrollListener() {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      _loadMoreTimelineData();
+    }
+  }
+
+  Future<void> _loadMoreTimelineData() async {
+    if (!_isFetchingMore && _hasMoreData) {
+      // _hasMoreData を追加
+      setState(() {
+        _isFetchingMore = true;
+      });
+
+      final moreData = await _fetchTimelineData(cursor: _nextCursor);
+
+      setState(() {
+        _timelineData.addAll(moreData['feed']);
+        _nextCursor = moreData['cursor'];
+        _isFetchingMore = false;
+      });
+    }
+  }
+
+  Future<Map<String, dynamic>> _fetchTimelineData({String? cursor}) async {
     // 既存の_fetchTimelineメソッドの内容をここに移動
     final session = await bsky.createSession(
       identifier: dotenv.get('BLUESKY_ID'),
       password: dotenv.get('BLUESKY_PASSWORD'),
     );
     final bluesky = bsky.Bluesky.fromSession(session.data);
-    final feeds = await bluesky.feeds.findTimeline(limit: 100);
+
+    final feeds = await bluesky.feeds.findTimeline(limit: 100, cursor: cursor);
 
     // タイムラインのJSONを取得する
     final jsonFeeds = feeds.data.toJson()['feed'];
 
-    return jsonFeeds;
+    // カーソルを更新
+    _cursor = feeds.data.toJson()['cursor'];
+
+    // もしカーソルが null なら、これ以上データがないと判断
+    if (_cursor == null) {
+      _hasMoreData = false;
+    }
+
+    // タイムラインのフィードとカーソルを返す
+    return {'feed': jsonFeeds, 'cursor': _cursor};
   }
 
   Widget _buildPostContent(Map<String, dynamic> post) {
@@ -440,15 +490,18 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
     }
 
     return RefreshIndicator(
-      onRefresh: () async {
-        if (!_isRefreshing) {
-          await _refreshTimeline();
-        }
-      },
+      onRefresh: () => _refreshTimeline(),
       child: ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: _timelineData.length,
+        controller: _scrollController,
+        itemCount: _timelineData.length + 1,
         itemBuilder: (context, index) {
+          // 最後の要素の場合、_hasMoreData が true ならローディングアイコンを表示、そうでなければ空のコンテナを表示
+          if (index == _timelineData.length) {
+            return _hasMoreData
+                ? const Center(child: CircularProgressIndicator())
+                : const SizedBox.shrink();
+          }
+
           final feed = _timelineData[index];
           final post = feed['post'];
           final author = post['author'];
@@ -469,7 +522,7 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
                   child: Column(
                     children: [
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.start, // ここを追加
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           CircleAvatar(
                             backgroundImage:
