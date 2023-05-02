@@ -57,6 +57,11 @@ class _PostDetailsState extends State<PostDetails> {
                         return Image.network(
                           imageUrls[index],
                           fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(
+                              child: Icon(Icons.error),
+                            );
+                          },
                         );
                       },
                       itemCount: imageUrls.length,
@@ -148,6 +153,11 @@ class _PostDetailsState extends State<PostDetails> {
                             width: 100,
                             height: 100,
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Center(
+                                child: Icon(Icons.error),
+                              );
+                            },
                           ),
                         ),
                       ))

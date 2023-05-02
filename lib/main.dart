@@ -296,6 +296,11 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
                             width: 100,
                             height: 100,
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Center(
+                                child: Icon(Icons.error),
+                              );
+                            },
                           ),
                         ),
                       ))
@@ -456,6 +461,11 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
                         return Image.network(
                           imageUrls[index],
                           fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(
+                              child: Icon(Icons.error),
+                            );
+                          },
                         );
                       },
                       itemCount: imageUrls.length,
