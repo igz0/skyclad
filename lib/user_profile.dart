@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
+import 'package:timeago/timeago.dart' as timeago;
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+// ウィジェット
+import 'package:skyclad/widgets/post_widget.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final String actor;
@@ -121,29 +126,70 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget buildPostCard(dynamic post) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+  Widget buildPostCard(dynamic feed) {
+    final post = feed['post'];
+    final author = post['author'];
+    final createdAt = DateTime.parse(post['indexedAt']).toLocal();
+
+    return Container(
+        padding: const EdgeInsets.all(8.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              post['post']['record']['text'],
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 16),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Replies: ${post['post']['replyCount']}'),
-                Text('Reposts: ${post['post']['repostCount']}'),
-                Text('Likes: ${post['post']['likeCount']}'),
+                GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UserProfileScreen(
+                            actor: author['handle'],
+                          ),
+                        ),
+                      );
+                    },
+                    child: CircleAvatar(
+                      backgroundImage: NetworkImage(author['avatar'] ?? ''),
+                      radius: 24,
+                    )),
+                const SizedBox(width: 8.0),
+                Flexible(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                author['displayName'] ?? '',
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 14.0,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Flexible(
+                              child: Text(
+                                '@${author['handle']}',
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: Colors.white38),
+                              ),
+                            ),
+                            Text(
+                              timeago.format(createdAt, locale: "ja"),
+                              style: const TextStyle(fontSize: 12.0),
+                              overflow: TextOverflow.clip,
+                            ),
+                          ],
+                        ),
+                        PostWidget(post: post), // これを使用します。
+                      ]),
+                ),
               ],
             ),
           ],
-        ),
-      ),
-    );
+        ));
   }
 }
