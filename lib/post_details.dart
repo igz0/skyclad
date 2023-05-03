@@ -21,6 +21,8 @@ class PostDetails extends StatefulWidget {
 
 class _PostDetailsState extends State<PostDetails> {
   Map<String, dynamic> _post;
+  bool? _isLiked;
+  bool? _isReposted;
 
   _PostDetailsState() : _post = {};
 
@@ -28,6 +30,8 @@ class _PostDetailsState extends State<PostDetails> {
   void initState() {
     super.initState();
     _post = widget.post;
+    _isLiked = _post['viewer']['like'] != null;
+    _isReposted = _post['viewer']['repost'] != null;
   }
 
   // 画像をダイアログで表示する
@@ -369,11 +373,19 @@ class _PostDetailsState extends State<PostDetails> {
               ]),
               Column(children: [
                 IconButton(
-                  icon: isReposted
+                  icon: _isReposted!
                       ? const Icon(Icons.cached)
                       : const Icon(Icons.cached_outlined),
-                  color: isReposted ? Colors.green : null,
+                  color: _isReposted! ? Colors.green : null,
                   onPressed: () async {
+                    setState(() {
+                      _isReposted = !_isReposted!;
+                      if (_isReposted!) {
+                        _post['repostCount'] += 1;
+                      } else {
+                        _post['repostCount'] -= 1;
+                      }
+                    });
                     final session = await bsky.createSession(
                       identifier: dotenv.get('BLUESKY_ID'),
                       password: dotenv.get('BLUESKY_PASSWORD'),
@@ -394,24 +406,25 @@ class _PostDetailsState extends State<PostDetails> {
                       _post['viewer']
                           ['repost'] = {'uri': repostedRecord.data.uri};
                     }
-                    setState(() {
-                      if (isReposted) {
-                        _post['viewer']['repost'] = null;
-                        _post['repostCount'] -= 1;
-                      } else {
-                        _post['repostCount'] += 1;
-                      }
-                    });
                   },
                 ),
               ]),
               Column(children: [
                 IconButton(
-                  icon: isLiked
+                  icon: _isLiked!
                       ? const Icon(Icons.favorite)
                       : const Icon(Icons.favorite_border),
-                  color: isLiked ? Colors.red : null,
+                  color: _isLiked! ? Colors.red : null,
                   onPressed: () async {
+                    setState(() {
+                      _isLiked = !_isLiked!;
+                      if (_isLiked!) {
+                        _post['likeCount'] += 1;
+                      } else {
+                        _post['likeCount'] -= 1;
+                      }
+                    });
+
                     final session = await bsky.createSession(
                       identifier: dotenv.get('BLUESKY_ID'),
                       password: dotenv.get('BLUESKY_PASSWORD'),
@@ -431,14 +444,6 @@ class _PostDetailsState extends State<PostDetails> {
                       );
                       _post['viewer']['like'] = {'uri': likedRecord.data.uri};
                     }
-                    setState(() {
-                      if (isLiked) {
-                        _post['viewer']['like'] = null;
-                        _post['likeCount'] -= 1;
-                      } else {
-                        _post['likeCount'] += 1;
-                      }
-                    });
                   },
                 ),
               ]),
