@@ -156,7 +156,7 @@ class PostWidget extends StatelessWidget {
         },
         child: Container(
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.white38),
+            border: Border.all(color: Colors.white30),
             borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsets.all(8.0),

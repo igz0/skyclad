@@ -201,7 +201,7 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
   @override
   void deactivate() {
     super.deactivate();
-    PrimaryScrollController.of(context)?.removeListener(_scrollListener);
+    PrimaryScrollController.of(context).removeListener(_scrollListener);
   }
 
   // タイムラインを取得する
