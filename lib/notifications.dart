@@ -3,13 +3,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 
 class NotificationScreen extends StatefulWidget {
-  NotificationScreen({Key? key}) : super(key: key);
+  const NotificationScreen({Key? key}) : super(key: key);
 
   @override
-  _NotificationScreenState createState() => _NotificationScreenState();
+  NotificationScreenState createState() => NotificationScreenState();
 }
 
-class _NotificationScreenState extends State<NotificationScreen> {
+class NotificationScreenState extends State<NotificationScreen> {
   List<dynamic> notifications = [];
   bool isLoading = true;
 

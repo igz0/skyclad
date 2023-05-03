@@ -16,15 +16,15 @@ class PostDetails extends StatefulWidget {
   const PostDetails({required this.post, Key? key}) : super(key: key);
 
   @override
-  _PostDetailsState createState() => _PostDetailsState();
+  PostDetailsState createState() => PostDetailsState();
 }
 
-class _PostDetailsState extends State<PostDetails> {
+class PostDetailsState extends State<PostDetails> {
   Map<String, dynamic> _post;
   bool? _isLiked;
   bool? _isReposted;
 
-  _PostDetailsState() : _post = {};
+  PostDetailsState() : _post = {};
 
   @override
   void initState() {

@@ -13,9 +13,10 @@ import 'package:skyclad/post_details.dart';
 class PostWidget extends StatelessWidget {
   final Map<String, dynamic> post;
 
-  PostWidget({required this.post});
+  const PostWidget({required this.post, Key? key}) : super(key: key);
 
   // 投稿のウィジェットを作成する
+  @override
   Widget build(BuildContext context) {
     List<Widget> contentWidgets = [];
 

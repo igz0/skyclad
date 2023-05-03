@@ -10,16 +10,17 @@ import 'package:skyclad/widgets/post_widget.dart';
 // 別スクリーン
 import 'package:skyclad/post_details.dart';
 
+@immutable
 class UserProfileScreen extends StatefulWidget {
   final String actor;
 
-  UserProfileScreen({required this.actor});
+  const UserProfileScreen({Key? key, required this.actor}) : super(key: key);
 
   @override
-  _UserProfileScreenState createState() => _UserProfileScreenState();
+  UserProfileScreenState createState() => UserProfileScreenState();
 }
 
-class _UserProfileScreenState extends State<UserProfileScreen> {
+class UserProfileScreenState extends State<UserProfileScreen> {
   late Future<Map<String, dynamic>> profileData;
   late Future<List<dynamic>> postData;
   Map<String, dynamic> _profileData = {}; // 追加
