@@ -22,12 +22,52 @@ class UserProfileScreen extends StatefulWidget {
 class _UserProfileScreenState extends State<UserProfileScreen> {
   late Future<Map<String, dynamic>> profileData;
   late Future<List<dynamic>> postData;
+  Map<String, dynamic> _profileData = {}; // 追加
 
   @override
   void initState() {
     super.initState();
     profileData = fetchProfileData();
     postData = fetchPostData();
+  }
+
+  Future<void> followUser(String did) async {
+    try {
+      final session = await bsky.createSession(
+        identifier: dotenv.get('BLUESKY_ID'),
+        password: dotenv.get('BLUESKY_PASSWORD'),
+      );
+      final bluesky = bsky.Bluesky.fromSession(session.data);
+      final followResult = await bluesky.graphs.createFollow(did: did); // 追加
+
+      // Update the _profileData to reflect the follow status
+      setState(() {
+        _profileData['viewer']['following'] =
+            followResult.data.toJson()['uri']; // 変更
+      });
+    } catch (e) {
+      print("Error following user: $e");
+    }
+  }
+
+  Future<void> unfollowUser(String did) async {
+    try {
+      final session = await bsky.createSession(
+        identifier: dotenv.get('BLUESKY_ID'),
+        password: dotenv.get('BLUESKY_PASSWORD'),
+      );
+      final bluesky = bsky.Bluesky.fromSession(session.data);
+
+      await bluesky.repositories.deleteRecord(
+          uri: bsky.AtUri.parse(_profileData['viewer']['following']));
+
+      // Update the profileData to reflect the unfollow status
+      setState(() {
+        _profileData['viewer']['following'] = null;
+      });
+    } catch (e) {
+      print("Error unfollowing user: $e");
+    }
   }
 
   Future<Map<String, dynamic>> fetchProfileData() async {
@@ -37,7 +77,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
     final bluesky = bsky.Bluesky.fromSession(session.data);
     final profile = await bluesky.actors.findProfile(actor: widget.actor);
-    return profile.data.toJson();
+    _profileData = profile.data.toJson(); // 追加
+    return _profileData;
   }
 
   Future<List<dynamic>> fetchPostData() async {
@@ -119,10 +160,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () {
-              // Follow/Unfollow functionality goes here
+            onPressed: () async {
+              if (profile['viewer']['following'] != null) {
+                unfollowUser(profile['did']);
+              } else {
+                followUser(profile['did']);
+              }
             },
-            child: const Text('Follow'),
+            child: profile['viewer']['following'] != null
+                ? const Text('Unfollow')
+                : const Text('Follow'),
           ),
         ],
       ),
