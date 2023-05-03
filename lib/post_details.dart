@@ -363,12 +363,15 @@ class PostDetailsState extends State<PostDetails> {
                 ),
               ),
               const SizedBox(width: 10.0),
-              Text(
-                '${author['displayName']} (@${author['handle']})',
-                style: const TextStyle(
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white60,
+              Expanded(
+                // 追加
+                child: Text(
+                  '${author['displayName']} (@${author['handle']})',
+                  style: const TextStyle(
+                    fontSize: 14.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white60,
+                  ),
                 ),
               ),
             ],
@@ -388,6 +391,106 @@ class PostDetailsState extends State<PostDetails> {
           const SizedBox(height: 15.0)
         ],
       ),
+    );
+  }
+
+  // リプライ先のスレッドの内容を表示する
+  Future<Widget> _buildThreadPost(
+      BuildContext context, Map<String, dynamic> post) async {
+    final recordUri = post['uri'];
+
+    final session = await bsky.createSession(
+      identifier: dotenv.get('BLUESKY_ID'),
+      password: dotenv.get('BLUESKY_PASSWORD'),
+    );
+    final bluesky = bsky.Bluesky.fromSession(session.data);
+
+    final feeds =
+        await bluesky.feeds.findPostThread(uri: bsky.AtUri.parse(recordUri));
+
+    // 引用投稿先のJSONを取得する
+    final replies = feeds.data.toJson()['thread']['replies'];
+
+    if (replies == null) {
+      return const SizedBox.shrink();
+    }
+
+    return ListView.builder(
+      itemCount: replies.length,
+      itemBuilder: (context, index) {
+        final feed = replies[index];
+        final post = feed['post'];
+        final author = post['author'];
+        final createdAt = DateTime.parse(post['indexedAt']).toLocal();
+
+        return Column(
+          children: [
+            if (index != 0) // この行を追加
+              const Divider(color: Colors.white38, height: 1.0), // この行を追加
+            InkWell(
+              onTap: () {
+                // 投稿詳細画面への遷移
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PostDetails(
+                      post: post,
+                    ),
+                  ),
+                );
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Divider(color: Colors.white38, height: 1.0),
+                  const SizedBox(height: 15.0),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          // ユーザー詳細画面への遷移
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => UserProfileScreen(
+                                actor: author['handle'],
+                              ),
+                            ),
+                          );
+                        },
+                        child: CircleAvatar(
+                          radius: 24.0,
+                          backgroundImage: NetworkImage(author['avatar'] ?? ''),
+                        ),
+                      ),
+                      const SizedBox(width: 10.0),
+                      Expanded(
+                        // 追加
+                        child: Text(
+                          '${author['displayName']} (@${author['handle']})',
+                          style: const TextStyle(
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white60,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 5.0),
+                  Text(
+                    post['record']['text'],
+                    style: const TextStyle(fontSize: 14.0, color: Colors.white),
+                  ),
+                  const SizedBox(height: 30.0),
+                ],
+              ),
+            )
+          ],
+        );
+      },
+      shrinkWrap: true, // 追加
+      physics: const NeverScrollableScrollPhysics(),
     );
   }
 
@@ -605,6 +708,20 @@ class PostDetailsState extends State<PostDetails> {
               ],
             ),
             const SizedBox(height: 10.0),
+            FutureBuilder(
+              future: _buildThreadPost(context, _post),
+              builder: (BuildContext context, AsyncSnapshot<Widget> snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  if (snapshot.hasData) {
+                    return snapshot.data!;
+                  } else {
+                    return const SizedBox.shrink();
+                  }
+                } else {
+                  return const CircularProgressIndicator();
+                }
+              },
+            ),
           ],
         ),
       ),
