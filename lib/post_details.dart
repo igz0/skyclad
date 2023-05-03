@@ -366,7 +366,7 @@ class PostDetailsState extends State<PostDetails> {
               Expanded(
                 // 追加
                 child: Text(
-                  '${author['displayName']} (@${author['handle']})',
+                  '${author['displayName'] ?? ''} (@${author['handle']})',
                   style: const TextStyle(
                     fontSize: 14.0,
                     fontWeight: FontWeight.bold,
@@ -467,7 +467,7 @@ class PostDetailsState extends State<PostDetails> {
                       Expanded(
                         // 追加
                         child: Text(
-                          '${author['displayName']} (@${author['handle']})',
+                          '${author['displayName'] ?? ''} (@${author['handle']})',
                           style: const TextStyle(
                             fontSize: 14.0,
                             fontWeight: FontWeight.bold,

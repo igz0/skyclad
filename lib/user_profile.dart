@@ -139,7 +139,7 @@ class UserProfileScreenState extends State<UserProfileScreen> {
           Row(
             children: [
               CircleAvatar(
-                backgroundImage: NetworkImage(profile['avatar']),
+                backgroundImage: NetworkImage(profile['avatar'] ?? ''),
                 radius: 30,
               ),
               const SizedBox(width: 16),
