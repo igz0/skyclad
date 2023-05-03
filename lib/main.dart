@@ -38,7 +38,7 @@ class MyAppState extends State<MyApp> {
     _pages = [
       BlueskyTimeline(timelineKey: blueskyTimelineKey),
       const Placeholder(),
-      NotificationScreen(),
+      const NotificationScreen(),
       UserProfileScreen(actor: dotenv.get('BLUESKY_ID')),
     ];
   }
