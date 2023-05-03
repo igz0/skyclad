@@ -293,6 +293,99 @@ class _PostDetailsState extends State<PostDetails> {
     return const SizedBox.shrink();
   }
 
+  Future<Widget> _buildParentPost(
+      BuildContext context, Map<String, dynamic> post) async {
+    if (post['record']['reply'] == null) {
+      return const SizedBox.shrink();
+    }
+
+    final parentUri = post['record']['reply']['parent']['uri'];
+
+    final session = await bsky.createSession(
+      identifier: dotenv.get('BLUESKY_ID'),
+      password: dotenv.get('BLUESKY_PASSWORD'),
+    );
+    final bluesky = bsky.Bluesky.fromSession(session.data);
+    final feeds =
+        await bluesky.feeds.findPosts(uris: [bsky.AtUri.parse(parentUri)]);
+
+    // 引用投稿先のJSONを取得する
+    final parent = feeds.data.toJson()['posts'][0];
+
+    if (parent == null) {
+      return const SizedBox.shrink();
+    }
+
+    final author = parent['author'];
+    final content = parent['record']['text'];
+    final createdAt = DateTime.parse(parent['indexedAt']).toLocal();
+
+    DateFormat format = DateFormat('yyyy/MM/dd HH:mm');
+    String dateStr = format.format(createdAt);
+
+    return InkWell(
+      onTap: () {
+        // 投稿詳細画面への遷移
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PostDetails(
+              post: parent,
+            ),
+          ),
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  // ユーザー詳細画面への遷移
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => UserProfileScreen(
+                        actor: author['handle'],
+                      ),
+                    ),
+                  );
+                },
+                child: CircleAvatar(
+                  radius: 24.0,
+                  backgroundImage: NetworkImage(author['avatar'] ?? ''),
+                ),
+              ),
+              const SizedBox(width: 10.0),
+              Text(
+                '${author['displayName']} (@${author['handle']})',
+                style: const TextStyle(
+                  fontSize: 14.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white60,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 5.0),
+          Text(
+            content,
+            style: const TextStyle(fontSize: 14.0, color: Colors.white),
+          ),
+          const SizedBox(height: 5.0),
+          Text(
+            dateStr,
+            style: const TextStyle(fontSize: 12.0, color: Colors.white38),
+          ),
+          const SizedBox(height: 15.0),
+          const Divider(color: Colors.white38, height: 1.0),
+          const SizedBox(height: 15.0)
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final author = _post['author'];
@@ -315,6 +408,20 @@ class _PostDetailsState extends State<PostDetails> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            FutureBuilder(
+              future: _buildParentPost(context, _post),
+              builder: (BuildContext context, AsyncSnapshot<Widget> snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  if (snapshot.hasData) {
+                    return snapshot.data!;
+                  } else {
+                    return const SizedBox.shrink();
+                  }
+                } else {
+                  return const CircularProgressIndicator();
+                }
+              },
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
