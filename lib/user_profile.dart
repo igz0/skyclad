@@ -31,6 +31,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     postData = fetchPostData();
   }
 
+  // ユーザーをフォローする
   Future<void> followUser(String did) async {
     try {
       final session = await bsky.createSession(
@@ -50,6 +51,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  // ユーザーのフォローを解除する
   Future<void> unfollowUser(String did) async {
     try {
       final session = await bsky.createSession(
@@ -70,6 +72,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  // ユーザーのプロフィールを取得する
   Future<Map<String, dynamic>> fetchProfileData() async {
     final session = await bsky.createSession(
       identifier: dotenv.get('BLUESKY_ID'),
@@ -81,6 +84,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return _profileData;
   }
 
+  // ユーザーの投稿を取得する
   Future<List<dynamic>> fetchPostData() async {
     final session = await bsky.createSession(
       identifier: dotenv.get('BLUESKY_ID'),
@@ -124,38 +128,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return const SizedBox.shrink();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text('User Profile'),
-        backgroundColor: Colors.blue[600],
-      ),
-      body: FutureBuilder(
-        future: Future.wait([profileData, postData]),
-        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            }
-            Map<String, dynamic> profile = snapshot.data![0];
-            List<dynamic> posts = snapshot.data![1];
-
-            return ListView(
-              children: [
-                buildProfileHeader(profile),
-                ...posts.map((post) => buildPostCard(post)).toList(),
-              ],
-            );
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
-    );
-  }
-
+  // 投稿のプロフィールを表示するウィジェットを作成する
   Widget buildProfileHeader(Map<String, dynamic> profile) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -209,6 +182,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
+  // 投稿のカードを表示するウィジェットを作成する
   Widget buildPostCard(dynamic feed) {
     final post = feed['post'];
     final author = post['author'];
@@ -284,6 +258,38 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
           const SizedBox(height: 10.0),
         ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text('User Profile'),
+        backgroundColor: Colors.blue[600],
+      ),
+      body: FutureBuilder(
+        future: Future.wait([profileData, postData]),
+        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
+            Map<String, dynamic> profile = snapshot.data![0];
+            List<dynamic> posts = snapshot.data![1];
+
+            return ListView(
+              children: [
+                buildProfileHeader(profile),
+                ...posts.map((post) => buildPostCard(post)).toList(),
+              ],
+            );
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        },
       ),
     );
   }

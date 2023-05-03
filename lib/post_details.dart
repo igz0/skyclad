@@ -93,6 +93,7 @@ class _PostDetailsState extends State<PostDetails> {
     );
   }
 
+  // 投稿の内容を表示する
   Widget _buildPostContent(Map<String, dynamic> post) {
     List<Widget> contentWidgets = [];
 
@@ -183,6 +184,7 @@ class _PostDetailsState extends State<PostDetails> {
     );
   }
 
+  // リポストされた場合はリポストしたユーザー名を表示する
   Widget _buildRepostedBy(Map<String, dynamic> feed) {
     if (feed['reason'] != null &&
         feed['reason']['\$type'] == 'app.bsky.feed.defs#reasonRepost') {
@@ -198,6 +200,7 @@ class _PostDetailsState extends State<PostDetails> {
     return const SizedBox.shrink();
   }
 
+  // リプライの場合はリプライしたユーザー名を表示する
   Widget _buildRepliedBy(Map<String, dynamic> feed) {
     if (feed['reply'] != null) {
       final repliedTo = feed['reply']['parent']['author'];
@@ -214,6 +217,7 @@ class _PostDetailsState extends State<PostDetails> {
     return const SizedBox.shrink();
   }
 
+  // 引用投稿を表示する
   Widget _buildQuotedPost(Map<String, dynamic> post) {
     if (post['embed'] != null &&
         post['embed']['\$type'] == 'app.bsky.embed.record#view') {
@@ -293,6 +297,7 @@ class _PostDetailsState extends State<PostDetails> {
     return const SizedBox.shrink();
   }
 
+  // リプライ先の投稿の内容を表示する
   Future<Widget> _buildParentPost(
       BuildContext context, Map<String, dynamic> post) async {
     if (post['record']['reply'] == null) {

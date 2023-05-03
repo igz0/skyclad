@@ -19,6 +19,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     fetchNotifications();
   }
 
+  // 通知を取得する
   Future<void> fetchNotifications() async {
     final session = await bsky.createSession(
       identifier: dotenv.get('BLUESKY_ID'),
@@ -32,6 +33,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
       notifications = feeds.toJson()['notifications'];
       isLoading = false;
     });
+  }
+
+  // 通知の種類に応じて通知の内容を返す
+  String _getNotificationText(Map<String, dynamic> notification) {
+    switch (notification['reason']) {
+      case 'follow':
+        return 'フォローされました。';
+      case 'like':
+        return 'いいね！されました。';
+      case 'repost':
+        return 'リポストされました。';
+      default:
+        return '不明な通知です。';
+    }
   }
 
   @override
@@ -58,18 +73,5 @@ class _NotificationScreenState extends State<NotificationScreen> {
               },
             ),
     );
-  }
-
-  String _getNotificationText(Map<String, dynamic> notification) {
-    switch (notification['reason']) {
-      case 'follow':
-        return 'フォローされました。';
-      case 'like':
-        return 'いいね！されました。';
-      case 'repost':
-        return 'リポストされました。';
-      default:
-        return '不明な通知です。';
-    }
   }
 }

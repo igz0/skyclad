@@ -380,7 +380,7 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
                                       ),
                                     ],
                                   ),
-                                  PostWidget(post: post), // これを使用します。
+                                  PostWidget(post: post),
                                   _buildRepostedBy(feed),
                                   _buildRepliedBy(feed)
                                 ]),
