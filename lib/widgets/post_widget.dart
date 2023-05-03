@@ -20,7 +20,7 @@ class PostWidget extends StatelessWidget {
     List<Widget> contentWidgets = [];
 
     // 投稿文を追加する
-    final elements = linkify(post['record']['text'],
+    final elements = linkify(post['record']?['text'],
         options: const LinkifyOptions(humanize: false));
     final List<InlineSpan> spans = [];
 
