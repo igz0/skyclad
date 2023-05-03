@@ -91,6 +91,39 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return feeds.data.toJson()['feed'];
   }
 
+  // 投稿がリポストだった場合にリポストであることを表記したウィジェットを作成する
+  Widget _buildRepostedBy(Map<String, dynamic> feed) {
+    if (feed['reason'] != null &&
+        feed['reason']['\$type'] == 'app.bsky.feed.defs#reasonRepost') {
+      final repostedBy = feed['reason']['by'];
+      return Column(children: [
+        const SizedBox(height: 8.0),
+        Text(
+          'Reposted by @${repostedBy['displayName']}',
+          style: const TextStyle(color: Colors.white38, fontSize: 12.0),
+        ),
+      ]);
+    }
+    return const SizedBox.shrink();
+  }
+
+  // 投稿がリプライだった場合にリプライであることを表記したウィジェットを作成する
+  Widget _buildRepliedBy(Map<String, dynamic> feed) {
+    if (feed['reply'] != null) {
+      final repliedTo = feed['reply']['parent']['author'];
+      return Column(
+        children: [
+          const SizedBox(height: 8.0),
+          Text(
+            'Reply to ${repliedTo['displayName']}',
+            style: const TextStyle(color: Colors.white38, fontSize: 12.0),
+          ),
+        ],
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -242,7 +275,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           ),
                         ],
                       ),
-                      PostWidget(post: post), // これを使用します。
+                      PostWidget(post: post),
+                      _buildRepostedBy(feed),
+                      _buildRepliedBy(feed),
                     ]),
               ),
             ],
