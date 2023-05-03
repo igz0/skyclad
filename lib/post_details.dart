@@ -423,6 +423,9 @@ class PostDetailsState extends State<PostDetails> {
         final author = post['author'];
         final createdAt = DateTime.parse(post['indexedAt']).toLocal();
 
+        DateFormat format = DateFormat('yyyy/MM/dd HH:mm');
+        String dateStr = format.format(createdAt);
+
         return Column(
           children: [
             if (index != 0) // この行を追加
@@ -473,6 +476,13 @@ class PostDetailsState extends State<PostDetails> {
                             fontWeight: FontWeight.bold,
                             color: Colors.white60,
                           ),
+                        ),
+                      ),
+                      Text(
+                        dateStr,
+                        style: const TextStyle(
+                          fontSize: 12.0,
+                          color: Colors.white60,
                         ),
                       ),
                     ],
