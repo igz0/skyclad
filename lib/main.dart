@@ -176,21 +176,32 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
   bool _isFetchingMore = false;
   String? _nextCursor;
   final bool _hasMoreData = true; // この行を追加
-  final ScrollController _scrollController = ScrollController();
 
   // 初期化処理
   @override
   void initState() {
     super.initState();
     _fetchTimeline();
-    _scrollController.addListener(_scrollListener);
   }
 
   @override
-  void dispose() {
-    _scrollController.removeListener(_scrollListener);
-    _scrollController.dispose();
-    super.dispose();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    PrimaryScrollController.of(context).addListener(_scrollListener);
+  }
+
+  void _scrollListener() {
+    ScrollController controller = PrimaryScrollController.of(context);
+
+    if (controller.position.pixels == controller.position.maxScrollExtent) {
+      _loadMoreTimelineData();
+    }
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    PrimaryScrollController.of(context)?.removeListener(_scrollListener);
   }
 
   // タイムラインを取得する
@@ -210,13 +221,6 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
       _timelineData = data['feed'];
       _cursor = data['cursor'];
     });
-  }
-
-  void _scrollListener() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      _loadMoreTimelineData();
-    }
   }
 
   // タイムラインデータを追加で取得する
@@ -299,7 +303,6 @@ class BlueskyTimelineState extends State<BlueskyTimeline> {
     return RefreshIndicator(
       onRefresh: () => _refreshTimeline(),
       child: ListView.builder(
-        controller: _scrollController,
         itemCount: _timelineData.length + 1,
         itemBuilder: (context, index) {
           // 最後の要素の場合、_hasMoreData が true ならローディングアイコンを表示、そうでなければ空のコンテナを表示
