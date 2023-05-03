@@ -586,7 +586,7 @@ class PostDetailsState extends State<PostDetails> {
                     Container(
                       height: 50,
                       child: const VerticalDivider(
-                          width: 1, thickness: 1, color: Colors.white60),
+                          width: 1, thickness: 1, color: Colors.white30),
                     ),
                     const SizedBox(width: 43.0),
                     Column(
