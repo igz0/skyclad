@@ -19,14 +19,13 @@ void main() async {
 
   final sharedPreferences = await SharedPreferences.getInstance();
   final isLoggedIn = sharedPreferences.getString('id') != null;
-  print("is logged in:");
 
   final goRouter = GoRouter(
     routes: [
       GoRoute(
         path: '/',
         pageBuilder: (context, state) =>
-            MaterialPage(child: isLoggedIn ? MyApp() : LoginScreen()),
+            MaterialPage(child: isLoggedIn ? const MyApp() : LoginScreen()),
       ),
     ],
   );
@@ -145,12 +144,12 @@ class _MyAppState extends ConsumerState<MyApp> {
         drawer: Drawer(
           child: ListView(
             children: [
-              DrawerHeader(
+              const DrawerHeader(
                 decoration: BoxDecoration(color: Colors.lightBlue),
                 child: Text('Test App'),
               ),
               ListTile(
-                title: Text('ログアウト'),
+                title: const Text('ログアウト'),
                 onTap: () async {
                   // ログアウト処理
                   final sharedPreferences =
@@ -159,10 +158,12 @@ class _MyAppState extends ConsumerState<MyApp> {
                   sharedPreferences.remove('password');
 
                   // ログイン画面に遷移
-                  Navigator.push(
+                  // ignore: use_build_context_synchronously
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => LoginScreen(),
+                      // 遷移先のクラス
+                      builder: (BuildContext context) => LoginScreen(),
                     ),
                   );
                 },
