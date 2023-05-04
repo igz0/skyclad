@@ -105,7 +105,12 @@ class UserProfileScreen extends ConsumerWidget {
 
       ref.read(userProfileProvider.notifier).initUserProfile(actor: actor);
     } catch (e) {
-      print("Error following user: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("フォローに失敗しました。時間をおいて再度やり直してください。"),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -125,7 +130,12 @@ class UserProfileScreen extends ConsumerWidget {
 
       ref.read(userProfileProvider.notifier).initUserProfile(actor: actor);
     } catch (e) {
-      print("Error unfollowing user: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("アンフォローに失敗しました。時間をおいて再度やり直してください。"),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
