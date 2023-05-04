@@ -42,11 +42,18 @@ void main() async {
   );
 }
 
+// プロバイダー
 final isLoggedInProvider =
     StateNotifierProvider<IsLoggedInNotifier, bool>((ref) {
   return IsLoggedInNotifier();
 });
 
+final currentIndexProvider =
+    StateNotifierProvider<CurrentIndexNotifier, int>((ref) {
+  return CurrentIndexNotifier();
+});
+
+// Notifier
 class IsLoggedInNotifier extends StateNotifier<bool> {
   IsLoggedInNotifier() : super(false);
 
@@ -54,11 +61,6 @@ class IsLoggedInNotifier extends StateNotifier<bool> {
     state = value;
   }
 }
-
-final currentIndexProvider =
-    StateNotifierProvider<CurrentIndexNotifier, int>((ref) {
-  return CurrentIndexNotifier();
-});
 
 class CurrentIndexNotifier extends StateNotifier<int> {
   CurrentIndexNotifier() : super(0);
@@ -68,6 +70,7 @@ class CurrentIndexNotifier extends StateNotifier<int> {
   }
 }
 
+// ウィジェット
 class MyApp extends ConsumerStatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -86,93 +89,114 @@ class _MyAppState extends ConsumerState<MyApp> {
       title: 'Skyclad',
       theme: ThemeData.dark(),
       home: Scaffold(
-        appBar: currentIndex != 3
-            ? AppBar(
-                centerTitle: true,
-                title: Text([
-                  'Timeline',
-                  '検索',
-                  '通知',
-                  'プロフィール',
-                ][currentIndex]),
-                backgroundColor: Colors.blue[600],
-              )
-            : null,
-        body: [
-          BlueskyTimeline(
-            timelineKey: blueskyTimelineKey,
-          ),
-          const Placeholder(),
-          const NotificationScreen(),
-          UserProfileScreen(actor: dotenv.get('BLUESKY_ID')),
-        ][currentIndex],
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            _showCreatePostDialog(context);
-          },
-          backgroundColor: Colors.blue[600],
-          child: const Icon(Icons.edit, color: Colors.white),
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              label: '検索',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.notifications),
-              label: '通知',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle),
-              label: 'プロフィール',
-            ),
-          ],
-          currentIndex: currentIndex,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white38,
-          showUnselectedLabels: true,
-          onTap: (int index) {
-            ref.read(currentIndexProvider.notifier).updateIndex(index);
-          },
-        ),
-        drawer: Drawer(
-          child: ListView(
-            children: [
-              const DrawerHeader(
-                decoration: BoxDecoration(color: Colors.lightBlue),
-                child: Text('Test App'),
-              ),
-              ListTile(
-                title: const Text('ログアウト'),
-                onTap: () async {
-                  // ログアウト処理
-                  final sharedPreferences =
-                      await SharedPreferences.getInstance();
-                  sharedPreferences.remove('id');
-                  sharedPreferences.remove('password');
-
-                  // ログイン画面に遷移
-                  // ignore: use_build_context_synchronously
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      // 遷移先のクラス
-                      builder: (BuildContext context) => LoginScreen(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
+        appBar: _buildAppBar(currentIndex),
+        body: _buildBody(currentIndex),
+        floatingActionButton: _buildFloatingActionButton(context),
+        bottomNavigationBar: _buildBottomNavigationBar(currentIndex),
+        drawer: _buildDrawer(context),
         drawerEdgeDragWidth: 0, // ドロワーを開くジェスチャーを無効化
       ),
+    );
+  }
+
+  // AppBarを生成する関数
+  AppBar? _buildAppBar(int currentIndex) {
+    if (currentIndex == 3) return null;
+    return AppBar(
+      centerTitle: true,
+      title: Text([
+        'タイムライン',
+        '検索',
+        '通知',
+        'プロフィール',
+      ][currentIndex]),
+      backgroundColor: Colors.blue[600],
+    );
+  }
+
+  // 画面のコンテンツを生成する関数
+  Widget _buildBody(int currentIndex) {
+    return [
+      BlueskyTimeline(
+        timelineKey: blueskyTimelineKey,
+      ),
+      const Placeholder(),
+      const NotificationScreen(),
+      UserProfileScreen(actor: dotenv.get('BLUESKY_ID')),
+    ][currentIndex];
+  }
+
+  // BottomNavigationBarを生成する関数
+  BottomNavigationBar _buildBottomNavigationBar(int currentIndex) {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: 'ホーム',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.search),
+          label: '検索',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.notifications),
+          label: '通知',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.account_circle),
+          label: 'プロフィール',
+        ),
+      ],
+      currentIndex: currentIndex,
+      selectedItemColor: Colors.white,
+      unselectedItemColor: Colors.white38,
+      showUnselectedLabels: true,
+      onTap: (int index) {
+        ref.read(currentIndexProvider.notifier).updateIndex(index);
+      },
+    );
+  }
+
+  // Drawerを生成する関数
+  Drawer _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        children: [
+          const DrawerHeader(
+            decoration: BoxDecoration(color: Colors.lightBlue),
+            child: Text('テストアプリ'),
+          ),
+          ListTile(
+            title: const Text('ログアウト'),
+            onTap: () async {
+              // ログアウト処理
+              final sharedPreferences = await SharedPreferences.getInstance();
+              sharedPreferences.remove('id');
+              sharedPreferences.remove('password'); // ログイン画面に遷移
+
+              // ignore: use_build_context_synchronously
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (BuildContext context) => LoginScreen(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // FloatingActionButtonを生成する関数
+  FloatingActionButton _buildFloatingActionButton(BuildContext context) {
+    return FloatingActionButton(
+      onPressed: () {
+        _showCreatePostDialog(context);
+      },
+      backgroundColor: Colors.blue[600],
+      child: const Icon(Icons.edit, color: Colors.white),
     );
   }
 
