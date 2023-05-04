@@ -65,11 +65,10 @@ class LoginScreen extends ConsumerWidget {
 
                     // ログインに成功した場合、メイン画面に遷移
                     // ignore: use_build_context_synchronously
-                    Navigator.pushReplacement(
+                    Navigator.push(
                       context,
                       MaterialPageRoute(
-                        // 遷移先のクラス
-                        builder: (BuildContext context) => const MyApp(),
+                        builder: (context) => const MyApp(),
                       ),
                     );
                   } catch (e) {
