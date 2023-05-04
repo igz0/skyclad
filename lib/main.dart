@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // 別スクリーン
 import 'package:skyclad/notifications.dart';
@@ -11,54 +12,60 @@ import 'package:skyclad/timeline.dart';
 void main() async {
   await dotenv.load(fileName: '.env');
   timeago.setLocaleMessages("ja", timeago.JaMessages());
-  runApp(const MaterialApp(home: MyApp()));
+  runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatefulWidget {
+final currentIndexProvider =
+    StateNotifierProvider<CurrentIndexNotifier, int>((ref) {
+  return CurrentIndexNotifier();
+});
+
+class CurrentIndexNotifier extends StateNotifier<int> {
+  CurrentIndexNotifier() : super(0);
+
+  void updateIndex(int newIndex) {
+    state = newIndex;
+  }
+}
+
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
-  MyAppState createState() => MyAppState();
+  ConsumerState<MyApp> createState() => _MyAppState();
 }
 
-class MyAppState extends State<MyApp> {
+class _MyAppState extends ConsumerState<MyApp> {
   final GlobalKey<BlueskyTimelineState> blueskyTimelineKey =
       GlobalKey<BlueskyTimelineState>();
-  int currentIndex = 0;
-  late List<Widget> _pages;
-
-  final List<String> _appBarTitles = ['Timeline', '検索', '通知', 'プロフィール'];
-
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      BlueskyTimeline(timelineKey: blueskyTimelineKey),
-      const Placeholder(),
-      const NotificationScreen(),
-      UserProfileScreen(actor: dotenv.get('BLUESKY_ID')),
-    ];
-  }
 
   @override
   Widget build(BuildContext context) {
-    String appBarTitle = _appBarTitles[currentIndex];
-
-    // ユーザープロフィール画面の場合はAppBarを非表示にする
-    bool isShowAppBar = currentIndex != 3; // 追加
-
+    int currentIndex = ref.watch(currentIndexProvider);
     return MaterialApp(
       title: 'Skyclad',
       theme: ThemeData.dark(),
       home: Scaffold(
-        appBar: isShowAppBar // 追加
+        appBar: currentIndex != 3
             ? AppBar(
                 centerTitle: true,
-                title: Text(appBarTitle),
+                title: Text([
+                  'Timeline',
+                  '検索',
+                  '通知',
+                  'プロフィール',
+                ][currentIndex]),
                 backgroundColor: Colors.blue[600],
               )
             : null,
-        body: _pages[currentIndex],
+        body: [
+          BlueskyTimeline(
+            timelineKey: blueskyTimelineKey,
+          ),
+          const Placeholder(),
+          const NotificationScreen(),
+          UserProfileScreen(actor: dotenv.get('BLUESKY_ID')),
+        ][currentIndex],
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             _showCreatePostDialog(context);
@@ -91,9 +98,7 @@ class MyAppState extends State<MyApp> {
           unselectedItemColor: Colors.white38,
           showUnselectedLabels: true,
           onTap: (int index) {
-            setState(() {
-              currentIndex = index;
-            });
+            ref.read(currentIndexProvider.notifier).updateIndex(index);
           },
         ),
       ),

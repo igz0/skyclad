@@ -2,25 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 
-class NotificationScreen extends StatefulWidget {
+class NotificationScreen extends StatelessWidget {
   const NotificationScreen({Key? key}) : super(key: key);
 
-  @override
-  NotificationScreenState createState() => NotificationScreenState();
-}
-
-class NotificationScreenState extends State<NotificationScreen> {
-  List<dynamic> notifications = [];
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchNotifications();
-  }
-
   // 通知を取得する
-  Future<void> fetchNotifications() async {
+  Future<List<dynamic>> fetchNotifications() async {
     final session = await bsky.createSession(
       identifier: dotenv.get('BLUESKY_ID'),
       password: dotenv.get('BLUESKY_PASSWORD'),
@@ -29,10 +15,7 @@ class NotificationScreenState extends State<NotificationScreen> {
 
     final feeds = await bluesky.notifications.findNotifications();
 
-    setState(() {
-      notifications = feeds.toJson()['notifications'];
-      isLoading = false;
-    });
+    return feeds.toJson()['notifications'];
   }
 
   // 通知の種類に応じて通知の内容を返す
@@ -52,9 +35,16 @@ class NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
+      body: FutureBuilder<List<dynamic>>(
+        future: fetchNotifications(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('エラー: ${snapshot.error}'));
+          } else {
+            List<dynamic> notifications = snapshot.data!;
+            return ListView.builder(
               itemCount: notifications.length,
               itemBuilder: (context, index) {
                 var notification = notifications[index];
@@ -71,7 +61,10 @@ class NotificationScreenState extends State<NotificationScreen> {
                       : null,
                 );
               },
-            ),
+            );
+          }
+        },
+      ),
     );
   }
 }

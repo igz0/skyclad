@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // 別スクリーン
 import 'package:skyclad/post_details.dart';
@@ -11,7 +12,7 @@ import 'package:skyclad/user_profile.dart';
 import 'package:skyclad/widgets/post_widget.dart';
 
 @immutable
-class BlueskyTimeline extends StatefulWidget {
+class BlueskyTimeline extends ConsumerStatefulWidget {
   final GlobalKey<BlueskyTimelineState> timelineKey;
 
   const BlueskyTimeline({required this.timelineKey, Key? key})
@@ -21,13 +22,13 @@ class BlueskyTimeline extends StatefulWidget {
   BlueskyTimelineState createState() => BlueskyTimelineState();
 }
 
-class BlueskyTimelineState extends State<BlueskyTimeline> {
+class BlueskyTimelineState extends ConsumerState<BlueskyTimeline> {
   List<dynamic> _timelineData = [];
   String _cursor = "";
   bool _isLoading = true;
   bool _isFetchingMore = false;
   String? _nextCursor;
-  final bool _hasMoreData = true; // この行を追加
+  final bool _hasMoreData = true;
 
   // 初期化処理
   @override

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -10,127 +11,127 @@ import 'package:skyclad/widgets/post_widget.dart';
 // 別スクリーン
 import 'package:skyclad/post_details.dart';
 
-@immutable
-class UserProfileScreen extends StatefulWidget {
+class UserProfileState {
+  UserProfileState({required this.profileData, required this.postData});
+
+  final Map<String, dynamic> profileData;
+  final List<dynamic> postData;
+}
+
+class UserProfileNotifier extends StateNotifier<UserProfileState> {
+  UserProfileNotifier()
+      : super(UserProfileState(profileData: {}, postData: []));
+
+  Future<void> initUserProfile({required String actor}) async {
+    final profileData = await fetchProfileData(actor: actor);
+    final postData = await fetchPostData(actor: actor);
+    state = UserProfileState(profileData: profileData, postData: postData);
+  }
+
+  // ユーザーのプロフィールを取得する
+  Future<Map<String, dynamic>> fetchProfileData({required String actor}) async {
+    final session = await bsky.createSession(
+      identifier: dotenv.get('BLUESKY_ID'),
+      password: dotenv.get('BLUESKY_PASSWORD'),
+    );
+    final bluesky = bsky.Bluesky.fromSession(session.data);
+    final profile = await bluesky.actors.findProfile(actor: actor);
+    return profile.data.toJson();
+  }
+
+// ユーザーの投稿を取得する
+  Future<List<dynamic>> fetchPostData({required String actor}) async {
+    final session = await bsky.createSession(
+      identifier: dotenv.get('BLUESKY_ID'),
+      password: dotenv.get('BLUESKY_PASSWORD'),
+    );
+    final bluesky = bsky.Bluesky.fromSession(session.data);
+    final feeds = await bluesky.feeds.findFeed(actor: actor);
+    return feeds.data.toJson()['feed'];
+  }
+}
+
+final userProfileProvider =
+    StateNotifierProvider<UserProfileNotifier, UserProfileState>(
+        (ref) => UserProfileNotifier());
+
+class UserProfileScreen extends ConsumerWidget {
   final String actor;
 
   const UserProfileScreen({Key? key, required this.actor}) : super(key: key);
 
   @override
-  UserProfileScreenState createState() => UserProfileScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    // UserProfileNotifierを初期化します。
+    ref.read(userProfileProvider.notifier).initUserProfile(actor: actor);
 
-class UserProfileScreenState extends State<UserProfileScreen> {
-  late Future<Map<String, dynamic>> profileData;
-  late Future<List<dynamic>> postData;
-  Map<String, dynamic> _profileData = {}; // 追加
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text('User Profile'),
+        backgroundColor: Colors.blue[600],
+      ),
+      body: Consumer(
+        builder: (BuildContext context, WidgetRef ref, _) {
+          final state = ref.watch(userProfileProvider);
 
-  @override
-  void initState() {
-    super.initState();
-    profileData = fetchProfileData();
-    postData = fetchPostData();
+          if (state.profileData.isNotEmpty && state.postData.isNotEmpty) {
+            return ListView(
+              children: [
+                buildProfileHeader(context, ref, state.profileData),
+                ...state.postData
+                    .map((post) => buildPostCard(context, post))
+                    .toList(),
+              ],
+            );
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        },
+      ),
+    );
   }
 
   // ユーザーをフォローする
-  Future<void> followUser(String did) async {
+  Future<void> followUser(
+      BuildContext context, WidgetRef ref, String did) async {
     try {
       final session = await bsky.createSession(
         identifier: dotenv.get('BLUESKY_ID'),
         password: dotenv.get('BLUESKY_PASSWORD'),
       );
       final bluesky = bsky.Bluesky.fromSession(session.data);
-      final followResult = await bluesky.graphs.createFollow(did: did); // 追加
+      await bluesky.graphs.createFollow(did: did);
 
-      // Update the _profileData to reflect the follow status
-      setState(() {
-        _profileData['viewer']['following'] =
-            followResult.data.toJson()['uri']; // 変更
-      });
+      ref.read(userProfileProvider.notifier).initUserProfile(actor: actor);
     } catch (e) {
       print("Error following user: $e");
     }
   }
 
-  // ユーザーのフォローを解除する
-  Future<void> unfollowUser(String did) async {
+// ユーザーのフォローを解除する
+  Future<void> unfollowUser(
+      BuildContext context, WidgetRef ref, String did) async {
     try {
       final session = await bsky.createSession(
         identifier: dotenv.get('BLUESKY_ID'),
         password: dotenv.get('BLUESKY_PASSWORD'),
       );
       final bluesky = bsky.Bluesky.fromSession(session.data);
+      final profileData = ref.read(userProfileProvider).profileData;
 
       await bluesky.repositories.deleteRecord(
-          uri: bsky.AtUri.parse(_profileData['viewer']['following']));
+          uri: bsky.AtUri.parse(profileData['viewer']['following']));
 
-      // Update the profileData to reflect the unfollow status
-      setState(() {
-        _profileData['viewer']['following'] = null;
-      });
+      ref.read(userProfileProvider.notifier).initUserProfile(actor: actor);
     } catch (e) {
       print("Error unfollowing user: $e");
     }
   }
 
-  // ユーザーのプロフィールを取得する
-  Future<Map<String, dynamic>> fetchProfileData() async {
-    final session = await bsky.createSession(
-      identifier: dotenv.get('BLUESKY_ID'),
-      password: dotenv.get('BLUESKY_PASSWORD'),
-    );
-    final bluesky = bsky.Bluesky.fromSession(session.data);
-    final profile = await bluesky.actors.findProfile(actor: widget.actor);
-    _profileData = profile.data.toJson(); // 追加
-    return _profileData;
-  }
-
-  // ユーザーの投稿を取得する
-  Future<List<dynamic>> fetchPostData() async {
-    final session = await bsky.createSession(
-      identifier: dotenv.get('BLUESKY_ID'),
-      password: dotenv.get('BLUESKY_PASSWORD'),
-    );
-    final bluesky = bsky.Bluesky.fromSession(session.data);
-    final feeds = await bluesky.feeds.findFeed(actor: widget.actor);
-    return feeds.data.toJson()['feed'];
-  }
-
-  // 投稿がリポストだった場合にリポストであることを表記したウィジェットを作成する
-  Widget _buildRepostedBy(Map<String, dynamic> feed) {
-    if (feed['reason'] != null &&
-        feed['reason']['\$type'] == 'app.bsky.feed.defs#reasonRepost') {
-      final repostedBy = feed['reason']['by'];
-      return Column(children: [
-        const SizedBox(height: 8.0),
-        Text(
-          'Reposted by @${repostedBy['displayName']}',
-          style: const TextStyle(color: Colors.white38, fontSize: 12.0),
-        ),
-      ]);
-    }
-    return const SizedBox.shrink();
-  }
-
-  // 投稿がリプライだった場合にリプライであることを表記したウィジェットを作成する
-  Widget _buildRepliedBy(Map<String, dynamic> feed) {
-    if (feed['reply'] != null) {
-      final repliedTo = feed['reply']['parent']['author'];
-      return Column(
-        children: [
-          const SizedBox(height: 8.0),
-          Text(
-            'Reply to ${repliedTo['displayName']}',
-            style: const TextStyle(color: Colors.white38, fontSize: 12.0),
-          ),
-        ],
-      );
-    }
-    return const SizedBox.shrink();
-  }
-
   // 投稿のプロフィールを表示するウィジェットを作成する
-  Widget buildProfileHeader(Map<String, dynamic> profile) {
+  Widget buildProfileHeader(
+      BuildContext context, WidgetRef ref, Map<String, dynamic> profile) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -169,9 +170,9 @@ class UserProfileScreenState extends State<UserProfileScreen> {
           ElevatedButton(
             onPressed: () async {
               if (profile['viewer']['following'] != null) {
-                unfollowUser(profile['did']);
+                unfollowUser(context, ref, profile['did']);
               } else {
-                followUser(profile['did']);
+                followUser(context, ref, profile['did']);
               }
             },
             child: profile['viewer']['following'] != null
@@ -184,7 +185,7 @@ class UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   // 投稿のカードを表示するウィジェットを作成する
-  Widget buildPostCard(dynamic feed) {
+  Widget buildPostCard(BuildContext context, dynamic feed) {
     final post = feed['post'];
     final author = post['author'];
     final createdAt = DateTime.parse(post['indexedAt']).toLocal();
@@ -263,35 +264,37 @@ class UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text('User Profile'),
-        backgroundColor: Colors.blue[600],
-      ),
-      body: FutureBuilder(
-        future: Future.wait([profileData, postData]),
-        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            }
-            Map<String, dynamic> profile = snapshot.data![0];
-            List<dynamic> posts = snapshot.data![1];
+  // 必要に応じて、_buildRepostedByと_buildRepliedByメソッドも追加します。
+  // 投稿がリポストだった場合にリポストであることを表記したウィジェットを作成する
+  Widget _buildRepostedBy(Map<String, dynamic> feed) {
+    if (feed['reason'] != null &&
+        feed['reason']['\$type'] == 'app.bsky.feed.defs#reasonRepost') {
+      final repostedBy = feed['reason']['by'];
+      return Column(children: [
+        const SizedBox(height: 8.0),
+        Text(
+          'Reposted by @${repostedBy['displayName']}',
+          style: const TextStyle(color: Colors.white38, fontSize: 12.0),
+        ),
+      ]);
+    }
+    return const SizedBox.shrink();
+  }
 
-            return ListView(
-              children: [
-                buildProfileHeader(profile),
-                ...posts.map((post) => buildPostCard(post)).toList(),
-              ],
-            );
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
-    );
+  // 投稿がリプライだった場合にリプライであることを表記したウィジェットを作成する
+  Widget _buildRepliedBy(Map<String, dynamic> feed) {
+    if (feed['reply'] != null) {
+      final repliedTo = feed['reply']['parent']['author'];
+      return Column(
+        children: [
+          const SizedBox(height: 8.0),
+          Text(
+            'Reply to ${repliedTo['displayName']}',
+            style: const TextStyle(color: Colors.white38, fontSize: 12.0),
+          ),
+        ],
+      );
+    }
+    return const SizedBox.shrink();
   }
 }
