@@ -3,16 +3,57 @@ import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // 別スクリーン
 import 'package:skyclad/notifications.dart';
 import 'package:skyclad/user_profile.dart';
 import 'package:skyclad/timeline.dart';
+import 'package:skyclad/login.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
   timeago.setLocaleMessages("ja", timeago.JaMessages());
-  runApp(const ProviderScope(child: MyApp()));
+
+  final sharedPreferences = await SharedPreferences.getInstance();
+  final isLoggedIn = sharedPreferences.getString('id') != null;
+  print("is logged in:");
+
+  final goRouter = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        pageBuilder: (context, state) =>
+            MaterialPage(child: isLoggedIn ? MyApp() : LoginScreen()),
+      ),
+    ],
+  );
+
+  runApp(
+    ProviderScope(
+      child: MaterialApp.router(
+        title: 'Skyclad',
+        theme: ThemeData.dark(),
+        routerDelegate: goRouter.routerDelegate,
+        routeInformationParser: goRouter.routeInformationParser,
+      ),
+    ),
+  );
+}
+
+final isLoggedInProvider =
+    StateNotifierProvider<IsLoggedInNotifier, bool>((ref) {
+  return IsLoggedInNotifier();
+});
+
+class IsLoggedInNotifier extends StateNotifier<bool> {
+  IsLoggedInNotifier() : super(false);
+
+  void setLoggedIn(bool value) {
+    state = value;
+  }
 }
 
 final currentIndexProvider =
@@ -101,6 +142,35 @@ class _MyAppState extends ConsumerState<MyApp> {
             ref.read(currentIndexProvider.notifier).updateIndex(index);
           },
         ),
+        drawer: Drawer(
+          child: ListView(
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(color: Colors.lightBlue),
+                child: Text('Test App'),
+              ),
+              ListTile(
+                title: Text('ログアウト'),
+                onTap: () async {
+                  // ログアウト処理
+                  final sharedPreferences =
+                      await SharedPreferences.getInstance();
+                  sharedPreferences.remove('id');
+                  sharedPreferences.remove('password');
+
+                  // ログイン画面に遷移
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LoginScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        drawerEdgeDragWidth: 0, // ドロワーを開くジェスチャーを無効化
       ),
     );
   }
