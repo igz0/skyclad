@@ -3,6 +3,7 @@ import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:skyclad/providers/providers.dart';
+import 'package:skyclad/view/user_profile.dart';
 
 class NotificationScreen extends ConsumerWidget {
   const NotificationScreen({Key? key}) : super(key: key);
@@ -49,8 +50,21 @@ class NotificationScreen extends ConsumerWidget {
                     var notification = notifications[index];
                     var author = notification['author'];
                     return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: NetworkImage(author['avatar'] ?? ''),
+                      leading: GestureDetector(
+                        onTap: () {
+                          // ユーザー詳細画面への遷移
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => UserProfileScreen(
+                                actor: author['handle'],
+                              ),
+                            ),
+                          );
+                        },
+                        child: CircleAvatar(
+                          backgroundImage: NetworkImage(author['avatar'] ?? ''),
+                        ),
                       ),
                       title: Text(author['displayName'] ?? ''),
                       subtitle: Text(_getNotificationText(notification)),
