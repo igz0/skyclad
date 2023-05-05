@@ -157,6 +157,10 @@ class UserProfileScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           Text(profile['description'] ?? ''),
+          if (profile['viewer']['followedBy'] != null)
+            const Chip(
+              label: Text('Follows you'),
+            ),
           const SizedBox(height: 16),
           Row(
             children: [
