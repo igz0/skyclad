@@ -124,8 +124,8 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
     }
 
     contentWidgets.add(
-      RichText(
-        text: TextSpan(
+      SelectableText.rich(
+        TextSpan(
           children: spans,
           style: const TextStyle(fontSize: 16.0, color: Colors.white),
         ),
