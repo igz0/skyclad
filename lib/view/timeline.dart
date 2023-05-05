@@ -10,6 +10,7 @@ import 'package:skyclad/view/notifications.dart';
 import 'package:skyclad/view/user_profile.dart';
 import 'package:skyclad/view/login.dart';
 import 'package:skyclad/view/post_details.dart';
+import 'package:skyclad/view/create_post.dart';
 
 // ウィジェット
 import 'package:skyclad/widgets/post_widget.dart';
@@ -144,60 +145,15 @@ class _MyAppState extends ConsumerState<MyApp> {
   FloatingActionButton _buildFloatingActionButton(BuildContext context) {
     return FloatingActionButton(
       onPressed: () {
-        _showCreatePostDialog(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (BuildContext context) => CreatePostScreen(),
+          ),
+        );
       },
       backgroundColor: Colors.blue[600],
       child: const Icon(Icons.edit, color: Colors.white),
-    );
-  }
-
-  // 新しい投稿作成ダイアログを表示
-  Future<void> _showCreatePostDialog(BuildContext context) async {
-    TextEditingController postController = TextEditingController();
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('新しい投稿を作成'),
-          content: TextField(
-            controller: postController,
-            decoration: const InputDecoration(
-              hintText: '投稿内容を入力してください',
-            ),
-            maxLines: 4,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('キャンセル'),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (postController.text.trim().isNotEmpty) {
-                  Navigator.pop(context);
-
-                  await _createPost(postController.text.trim());
-                  postController.clear();
-
-                  // コールバックを呼び出してタイムラインを更新
-                  // blueskyTimelineKey.currentState!._refreshTimeline();
-                }
-              },
-              child: const Text('投稿'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // 投稿を作成する
-  Future<void> _createPost(String text) async {
-    final bluesky = await ref.read(blueskySessionProvider.future);
-    await bluesky.feeds.createPost(
-      text: text,
     );
   }
 }
