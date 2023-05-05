@@ -23,6 +23,8 @@ class NotificationScreen extends ConsumerWidget {
         return 'いいね！されました。';
       case 'repost':
         return 'リポストされました。';
+      case 'reply':
+        return 'リプライされました。';
       default:
         return '不明な通知です。';
     }
