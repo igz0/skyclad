@@ -14,16 +14,7 @@ import 'package:skyclad/view/post_details.dart';
 // 投稿の詳細を取得するための FutureProvider
 final quotedPostProvider =
     FutureProvider.family<Map<String, dynamic>, String>((ref, uri) async {
-  final sharedPreferencesRepository =
-      ref.watch(sharedPreferencesRepositoryProvider);
-  final id = await sharedPreferencesRepository.getId();
-  final password = await sharedPreferencesRepository.getPassword();
-
-  final session = await bsky.createSession(
-    identifier: id,
-    password: password,
-  );
-  final bluesky = bsky.Bluesky.fromSession(session.data);
+  final bluesky = await ref.read(blueskySessionProvider.future);
   final feeds = await bluesky.feeds.findPosts(uris: [bsky.AtUri.parse(uri)]);
 
   // 引用投稿先のJSONを取得する

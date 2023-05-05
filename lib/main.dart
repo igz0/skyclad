@@ -21,6 +21,10 @@ void main() async {
         pageBuilder: (context, state) =>
             MaterialPage(child: isLoggedIn ? const MyApp() : LoginScreen()),
       ),
+      GoRoute(
+        path: '/login',
+        pageBuilder: (context, state) => MaterialPage(child: LoginScreen()),
+      ),
     ],
   );
 

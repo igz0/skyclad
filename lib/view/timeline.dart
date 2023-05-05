@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skyclad/model/current_index.dart';
@@ -134,7 +133,7 @@ class _MyAppState extends ConsumerState<MyApp> {
               sharedPreferences.remove('password'); // ログイン画面に遷移
 
               // ignore: use_build_context_synchronously
-              Navigator.pushReplacement(
+              Navigator.pop(
                 context,
                 MaterialPageRoute(
                   builder: (BuildContext context) => LoginScreen(),
@@ -202,16 +201,7 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   // 投稿を作成する
   Future<void> _createPost(String text) async {
-    final sharedPreferencesRepository =
-        ref.read(sharedPreferencesRepositoryProvider);
-    final id = await sharedPreferencesRepository.getId();
-    final password = await sharedPreferencesRepository.getPassword();
-
-    final session = await bsky.createSession(
-      identifier: id,
-      password: password,
-    );
-    final bluesky = bsky.Bluesky.fromSession(session.data);
+    final bluesky = await ref.read(blueskySessionProvider.future);
     await bluesky.feeds.createPost(
       text: text,
     );
@@ -305,18 +295,7 @@ class BlueskyTimelineState extends ConsumerState<BlueskyTimeline> {
   }
 
   Future<Map<String, dynamic>> _fetchTimelineData({String? cursor}) async {
-    final sharedPreferencesRepository =
-        ref.read(sharedPreferencesRepositoryProvider);
-    final id = await sharedPreferencesRepository.getId();
-    final password = await sharedPreferencesRepository.getPassword();
-
-    // 既存の_fetchTimelineメソッドの内容をここに移動
-    final session = await bsky.createSession(
-      identifier: id,
-      password: password,
-    );
-    final bluesky = bsky.Bluesky.fromSession(session.data);
-
+    final bluesky = await ref.read(blueskySessionProvider.future);
     final feeds = await bluesky.feeds.findTimeline(limit: 100, cursor: cursor);
 
     // タイムラインのJSONを取得する

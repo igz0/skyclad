@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:skyclad/main.dart'; // プロバイダをインポート
 import 'package:skyclad/providers/providers.dart';
 
 class NotificationScreen extends ConsumerWidget {

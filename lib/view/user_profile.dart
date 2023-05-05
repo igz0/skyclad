@@ -88,21 +88,14 @@ class UserProfileScreen extends ConsumerWidget {
   // ユーザーをフォローする
   Future<void> followUser(
       BuildContext context, WidgetRef ref, String did) async {
-    final sharedPreferencesRepository =
-        ref.read(sharedPreferencesRepositoryProvider);
-    final id = await sharedPreferencesRepository.getId();
-    final password = await sharedPreferencesRepository.getPassword();
+    final bluesky = await ref.read(blueskySessionProvider.future);
 
     try {
-      final session = await bsky.createSession(
-        identifier: id,
-        password: password,
-      );
-      final bluesky = bsky.Bluesky.fromSession(session.data);
       await bluesky.graphs.createFollow(did: did);
 
       ref.read(userProfileProvider.notifier).initUserProfile(actor: actor);
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("フォローに失敗しました。時間をおいて再度やり直してください。"),
@@ -115,17 +108,9 @@ class UserProfileScreen extends ConsumerWidget {
 // ユーザーのフォローを解除する
   Future<void> unfollowUser(
       BuildContext context, WidgetRef ref, String did) async {
-    final sharedPreferencesRepository =
-        ref.read(sharedPreferencesRepositoryProvider);
-    final id = await sharedPreferencesRepository.getId();
-    final password = await sharedPreferencesRepository.getPassword();
+    final bluesky = await ref.read(blueskySessionProvider.future);
 
     try {
-      final session = await bsky.createSession(
-        identifier: id,
-        password: password,
-      );
-      final bluesky = bsky.Bluesky.fromSession(session.data);
       final profileData = ref.read(userProfileProvider).profileData;
 
       await bluesky.repositories.deleteRecord(
@@ -133,6 +118,7 @@ class UserProfileScreen extends ConsumerWidget {
 
       ref.read(userProfileProvider.notifier).initUserProfile(actor: actor);
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("アンフォローに失敗しました。時間をおいて再度やり直してください。"),

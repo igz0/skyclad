@@ -8,7 +8,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skyclad/providers/providers.dart';
-import 'package:skyclad/repository/shared_preferences_repository.dart';
 
 import 'package:skyclad/view/user_profile.dart';
 
@@ -18,7 +17,7 @@ class PostDetails extends ConsumerStatefulWidget {
   const PostDetails({required this.post, Key? key}) : super(key: key);
 
   @override
-  _PostDetailsState createState() => _PostDetailsState();
+  ConsumerState<PostDetails> createState() => _PostDetailsState();
 }
 
 class _PostDetailsState extends ConsumerState<PostDetails> {
@@ -229,17 +228,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
         onTap: () async {
           final uri = quotedPost['uri'];
 
-          final sharedPreferencesRepository =
-              ref.watch(sharedPreferencesRepositoryProvider);
-          final id = await sharedPreferencesRepository.getId();
-          final password = await sharedPreferencesRepository.getPassword();
-
-          // 既存の_fetchTimelineメソッドの内容をここに移動
-          final session = await bsky.createSession(
-            identifier: id,
-            password: password,
-          );
-          final bluesky = bsky.Bluesky.fromSession(session.data);
+          final bluesky = await ref.read(blueskySessionProvider.future);
           final feeds =
               await bluesky.feeds.findPosts(uris: [bsky.AtUri.parse(uri)]);
 
@@ -312,16 +301,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
 
     final parentUri = post['record']['reply']['parent']['uri'];
 
-    final sharedPreferencesRepository =
-        ref.watch(sharedPreferencesRepositoryProvider);
-    final id = await sharedPreferencesRepository.getId();
-    final password = await sharedPreferencesRepository.getPassword();
-
-    final session = await bsky.createSession(
-      identifier: id,
-      password: password,
-    );
-    final bluesky = bsky.Bluesky.fromSession(session.data);
+    final bluesky = await ref.read(blueskySessionProvider.future);
     final feeds =
         await bluesky.feeds.findPosts(uris: [bsky.AtUri.parse(parentUri)]);
 
@@ -410,17 +390,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
       BuildContext context, Map<String, dynamic> post) async {
     final recordUri = post['uri'];
 
-    final sharedPreferencesRepository =
-        ref.watch(sharedPreferencesRepositoryProvider);
-    final id = await sharedPreferencesRepository.getId();
-    final password = await sharedPreferencesRepository.getPassword();
-
-    final session = await bsky.createSession(
-      identifier: id,
-      password: password,
-    );
-    final bluesky = bsky.Bluesky.fromSession(session.data);
-
+    final bluesky = await ref.read(blueskySessionProvider.future);
     final thread =
         await bluesky.feeds.findPostThread(uri: bsky.AtUri.parse(recordUri));
 
@@ -494,13 +464,6 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                           ),
                         ),
                       ),
-                      Text(
-                        dateStr,
-                        style: const TextStyle(
-                          fontSize: 12.0,
-                          color: Colors.white60,
-                        ),
-                      ),
                     ],
                   ),
                   const SizedBox(height: 5.0),
@@ -508,7 +471,15 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                     post['record']['text'],
                     style: const TextStyle(fontSize: 14.0, color: Colors.white),
                   ),
-                  const SizedBox(height: 30.0),
+                  const SizedBox(height: 15.0),
+                  Text(
+                    dateStr,
+                    style: const TextStyle(
+                      fontSize: 12.0,
+                      color: Colors.white60,
+                    ),
+                  ),
+                  const SizedBox(height: 15.0)
                 ],
               ),
             )
@@ -629,17 +600,8 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                       }
                     });
 
-                    final sharedPreferencesRepository =
-                        ref.watch(sharedPreferencesRepositoryProvider);
-                    final id = await sharedPreferencesRepository.getId();
-                    final password =
-                        await sharedPreferencesRepository.getPassword();
-
-                    final session = await bsky.createSession(
-                      identifier: id,
-                      password: password,
-                    );
-                    final bluesky = bsky.Bluesky.fromSession(session.data);
+                    final bluesky =
+                        await ref.read(blueskySessionProvider.future);
 
                     if (isReposted) {
                       // リポストを取り消し
@@ -674,17 +636,8 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                       }
                     });
 
-                    final sharedPreferencesRepository =
-                        ref.watch(sharedPreferencesRepositoryProvider);
-                    final id = await sharedPreferencesRepository.getId();
-                    final password =
-                        await sharedPreferencesRepository.getPassword();
-
-                    final session = await bsky.createSession(
-                      identifier: id,
-                      password: password,
-                    );
-                    final bluesky = bsky.Bluesky.fromSession(session.data);
+                    final bluesky =
+                        await ref.read(blueskySessionProvider.future);
 
                     if (isLiked) {
                       // いいねを取り消し
@@ -726,9 +679,9 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                       ],
                     ),
                     const SizedBox(width: 43.0),
-                    Container(
+                    const SizedBox(
                       height: 50,
-                      child: const VerticalDivider(
+                      child: VerticalDivider(
                           width: 1, thickness: 1, color: Colors.white30),
                     ),
                     const SizedBox(width: 43.0),
