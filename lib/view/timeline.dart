@@ -122,7 +122,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         children: [
           const DrawerHeader(
             decoration: BoxDecoration(color: Colors.lightBlue),
-            child: Text('テストアプリ'),
+            child: Text('Skyclad', style: TextStyle(fontSize: 24)),
           ),
           ListTile(
             title: const Text('ログアウト'),
