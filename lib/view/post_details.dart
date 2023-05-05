@@ -539,7 +539,8 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Column(
+        child: SingleChildScrollView(
+            child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             FutureBuilder(
@@ -762,7 +763,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
               },
             ),
           ],
-        ),
+        )),
       ),
     );
   }
