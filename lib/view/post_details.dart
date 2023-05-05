@@ -578,14 +578,6 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
             Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
               Column(children: [
                 IconButton(
-                  icon: const Icon(Icons.reply),
-                  onPressed: () {
-                    // TODO: 返信処理
-                  },
-                ),
-              ]),
-              Column(children: [
-                IconButton(
                   icon: _isReposted!
                       ? const Icon(Icons.cached)
                       : const Icon(Icons.cached_outlined),
