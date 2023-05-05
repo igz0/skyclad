@@ -73,7 +73,6 @@ class _MyAppState extends ConsumerState<MyApp> {
             BlueskyTimeline(
               timelineKey: blueskyTimelineKey,
             ),
-            const Placeholder(),
             const NotificationScreen(),
             UserProfileScreen(actor: id ?? ''),
           ][currentIndex];
