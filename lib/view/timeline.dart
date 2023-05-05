@@ -1,15 +1,222 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:skyclad/model/current_index.dart';
+import 'package:skyclad/providers/providers.dart';
 
 // 別スクリーン
-import 'package:skyclad/post_details.dart';
-import 'package:skyclad/user_profile.dart';
+import 'package:skyclad/view/notifications.dart';
+import 'package:skyclad/view/user_profile.dart';
+import 'package:skyclad/view/login.dart';
+import 'package:skyclad/view/post_details.dart';
 
 // ウィジェット
 import 'package:skyclad/widgets/post_widget.dart';
+
+// ウィジェット
+class MyApp extends ConsumerStatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  final GlobalKey<BlueskyTimelineState> blueskyTimelineKey =
+      GlobalKey<BlueskyTimelineState>();
+
+  @override
+  Widget build(BuildContext context) {
+    int currentIndex = ref.watch(currentIndexProvider);
+    return MaterialApp(
+      title: 'Skyclad',
+      theme: ThemeData.dark(),
+      home: Scaffold(
+        appBar: _buildAppBar(currentIndex),
+        body: _buildBody(currentIndex),
+        floatingActionButton: _buildFloatingActionButton(context),
+        bottomNavigationBar: _buildBottomNavigationBar(currentIndex),
+        drawer: _buildDrawer(context),
+        drawerEdgeDragWidth: 0, // ドロワーを開くジェスチャーを無効化
+      ),
+    );
+  }
+
+  // AppBarを生成する関数
+  AppBar? _buildAppBar(int currentIndex) {
+    if (currentIndex == 3) return null;
+    return AppBar(
+      centerTitle: true,
+      title: Text([
+        'ホーム',
+        '検索',
+        '通知',
+        'プロフィール',
+      ][currentIndex]),
+      backgroundColor: Colors.blue[600],
+    );
+  }
+
+  // タイムラインのコンテンツを生成する関数
+  Widget _buildBody(int currentIndex) {
+    return FutureBuilder<String>(
+      future: ref.read(sharedPreferencesRepositoryProvider).getId(),
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator(); // データがまだ来ていないときはローディングインジケータを表示
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}'); // エラーが発生した場合はエラーメッセージを表示
+        } else {
+          // データがロードされたらそれを使用してUIを構築
+          final id = snapshot.data;
+          return [
+            BlueskyTimeline(
+              timelineKey: blueskyTimelineKey,
+            ),
+            const Placeholder(),
+            const NotificationScreen(),
+            UserProfileScreen(actor: id ?? ''),
+          ][currentIndex];
+        }
+      },
+    );
+  }
+
+  // BottomNavigationBarを生成する関数
+  BottomNavigationBar _buildBottomNavigationBar(int currentIndex) {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: 'ホーム',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.search),
+          label: '検索',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.notifications),
+          label: '通知',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.account_circle),
+          label: 'プロフィール',
+        ),
+      ],
+      currentIndex: currentIndex,
+      selectedItemColor: Colors.white,
+      unselectedItemColor: Colors.white38,
+      showUnselectedLabels: true,
+      onTap: (int index) {
+        ref.read(currentIndexProvider.notifier).updateIndex(index);
+      },
+    );
+  }
+
+  // Drawerを生成する関数
+  Drawer _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        children: [
+          const DrawerHeader(
+            decoration: BoxDecoration(color: Colors.lightBlue),
+            child: Text('テストアプリ'),
+          ),
+          ListTile(
+            title: const Text('ログアウト'),
+            onTap: () async {
+              // ログアウト処理
+              final sharedPreferences = await SharedPreferences.getInstance();
+              sharedPreferences.remove('id');
+              sharedPreferences.remove('password'); // ログイン画面に遷移
+
+              // ignore: use_build_context_synchronously
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (BuildContext context) => LoginScreen(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // FloatingActionButtonを生成する関数
+  FloatingActionButton _buildFloatingActionButton(BuildContext context) {
+    return FloatingActionButton(
+      onPressed: () {
+        _showCreatePostDialog(context);
+      },
+      backgroundColor: Colors.blue[600],
+      child: const Icon(Icons.edit, color: Colors.white),
+    );
+  }
+
+  // 新しい投稿作成ダイアログを表示
+  Future<void> _showCreatePostDialog(BuildContext context) async {
+    TextEditingController postController = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('新しい投稿を作成'),
+          content: TextField(
+            controller: postController,
+            decoration: const InputDecoration(
+              hintText: '投稿内容を入力してください',
+            ),
+            maxLines: 4,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('キャンセル'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (postController.text.trim().isNotEmpty) {
+                  Navigator.pop(context);
+
+                  await _createPost(postController.text.trim());
+                  postController.clear();
+
+                  // コールバックを呼び出してタイムラインを更新
+                  // blueskyTimelineKey.currentState!._refreshTimeline();
+                }
+              },
+              child: const Text('投稿'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 投稿を作成する
+  Future<void> _createPost(String text) async {
+    final sharedPreferencesRepository =
+        ref.read(sharedPreferencesRepositoryProvider);
+    final id = await sharedPreferencesRepository.getId();
+    final password = await sharedPreferencesRepository.getPassword();
+
+    final session = await bsky.createSession(
+      identifier: id,
+      password: password,
+    );
+    final bluesky = bsky.Bluesky.fromSession(session.data);
+    await bluesky.feeds.createPost(
+      text: text,
+    );
+  }
+}
 
 @immutable
 class BlueskyTimeline extends ConsumerStatefulWidget {
@@ -60,6 +267,10 @@ class BlueskyTimelineState extends ConsumerState<BlueskyTimeline> {
   // タイムラインを取得する
   Future<void> _fetchTimeline() async {
     final data = await _fetchTimelineData();
+
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _timelineData = data['feed'];
       _nextCursor = data['cursor'];
@@ -94,10 +305,15 @@ class BlueskyTimelineState extends ConsumerState<BlueskyTimeline> {
   }
 
   Future<Map<String, dynamic>> _fetchTimelineData({String? cursor}) async {
+    final sharedPreferencesRepository =
+        ref.read(sharedPreferencesRepositoryProvider);
+    final id = await sharedPreferencesRepository.getId();
+    final password = await sharedPreferencesRepository.getPassword();
+
     // 既存の_fetchTimelineメソッドの内容をここに移動
     final session = await bsky.createSession(
-      identifier: dotenv.get('BLUESKY_ID'),
-      password: dotenv.get('BLUESKY_PASSWORD'),
+      identifier: id,
+      password: password,
     );
     final bluesky = bsky.Bluesky.fromSession(session.data);
 

@@ -2,29 +2,29 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:linkify/linkify.dart';
 import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:card_swiper/card_swiper.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skyclad/providers/providers.dart';
+import 'package:skyclad/repository/shared_preferences_repository.dart';
 
-import 'package:skyclad/user_profile.dart';
+import 'package:skyclad/view/user_profile.dart';
 
-class PostDetails extends StatefulWidget {
+class PostDetails extends ConsumerStatefulWidget {
   final Map<String, dynamic> post;
 
   const PostDetails({required this.post, Key? key}) : super(key: key);
 
   @override
-  PostDetailsState createState() => PostDetailsState();
+  _PostDetailsState createState() => _PostDetailsState();
 }
 
-class PostDetailsState extends State<PostDetails> {
-  Map<String, dynamic> _post;
+class _PostDetailsState extends ConsumerState<PostDetails> {
+  late Map<String, dynamic> _post;
   bool? _isLiked;
   bool? _isReposted;
-
-  PostDetailsState() : _post = {};
 
   @override
   void initState() {
@@ -229,10 +229,15 @@ class PostDetailsState extends State<PostDetails> {
         onTap: () async {
           final uri = quotedPost['uri'];
 
+          final sharedPreferencesRepository =
+              ref.watch(sharedPreferencesRepositoryProvider);
+          final id = await sharedPreferencesRepository.getId();
+          final password = await sharedPreferencesRepository.getPassword();
+
           // 既存の_fetchTimelineメソッドの内容をここに移動
           final session = await bsky.createSession(
-            identifier: dotenv.get('BLUESKY_ID'),
-            password: dotenv.get('BLUESKY_PASSWORD'),
+            identifier: id,
+            password: password,
           );
           final bluesky = bsky.Bluesky.fromSession(session.data);
           final feeds =
@@ -241,6 +246,7 @@ class PostDetailsState extends State<PostDetails> {
           // 引用投稿先のJSONを取得する
           final jsonFeed = feeds.data.toJson()['posts'][0];
 
+          // ignore: use_build_context_synchronously
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -306,9 +312,14 @@ class PostDetailsState extends State<PostDetails> {
 
     final parentUri = post['record']['reply']['parent']['uri'];
 
+    final sharedPreferencesRepository =
+        ref.watch(sharedPreferencesRepositoryProvider);
+    final id = await sharedPreferencesRepository.getId();
+    final password = await sharedPreferencesRepository.getPassword();
+
     final session = await bsky.createSession(
-      identifier: dotenv.get('BLUESKY_ID'),
-      password: dotenv.get('BLUESKY_PASSWORD'),
+      identifier: id,
+      password: password,
     );
     final bluesky = bsky.Bluesky.fromSession(session.data);
     final feeds =
@@ -399,17 +410,22 @@ class PostDetailsState extends State<PostDetails> {
       BuildContext context, Map<String, dynamic> post) async {
     final recordUri = post['uri'];
 
+    final sharedPreferencesRepository =
+        ref.watch(sharedPreferencesRepositoryProvider);
+    final id = await sharedPreferencesRepository.getId();
+    final password = await sharedPreferencesRepository.getPassword();
+
     final session = await bsky.createSession(
-      identifier: dotenv.get('BLUESKY_ID'),
-      password: dotenv.get('BLUESKY_PASSWORD'),
+      identifier: id,
+      password: password,
     );
     final bluesky = bsky.Bluesky.fromSession(session.data);
 
-    final feeds =
+    final thread =
         await bluesky.feeds.findPostThread(uri: bsky.AtUri.parse(recordUri));
 
     // 引用投稿先のJSONを取得する
-    final replies = feeds.data.toJson()['thread']['replies'];
+    final replies = thread.data.toJson()['thread']['replies'];
 
     if (replies == null) {
       return const SizedBox.shrink();
@@ -536,7 +552,7 @@ class PostDetailsState extends State<PostDetails> {
                     return const SizedBox.shrink();
                   }
                 } else {
-                  return const CircularProgressIndicator();
+                  return const SizedBox.shrink();
                 }
               },
             ),
@@ -611,9 +627,16 @@ class PostDetailsState extends State<PostDetails> {
                         _post['repostCount'] -= 1;
                       }
                     });
+
+                    final sharedPreferencesRepository =
+                        ref.watch(sharedPreferencesRepositoryProvider);
+                    final id = await sharedPreferencesRepository.getId();
+                    final password =
+                        await sharedPreferencesRepository.getPassword();
+
                     final session = await bsky.createSession(
-                      identifier: dotenv.get('BLUESKY_ID'),
-                      password: dotenv.get('BLUESKY_PASSWORD'),
+                      identifier: id,
+                      password: password,
                     );
                     final bluesky = bsky.Bluesky.fromSession(session.data);
 
@@ -650,9 +673,15 @@ class PostDetailsState extends State<PostDetails> {
                       }
                     });
 
+                    final sharedPreferencesRepository =
+                        ref.watch(sharedPreferencesRepositoryProvider);
+                    final id = await sharedPreferencesRepository.getId();
+                    final password =
+                        await sharedPreferencesRepository.getPassword();
+
                     final session = await bsky.createSession(
-                      identifier: dotenv.get('BLUESKY_ID'),
-                      password: dotenv.get('BLUESKY_PASSWORD'),
+                      identifier: id,
+                      password: password,
                     );
                     final bluesky = bsky.Bluesky.fromSession(session.data);
 
@@ -728,7 +757,7 @@ class PostDetailsState extends State<PostDetails> {
                     return const SizedBox.shrink();
                   }
                 } else {
-                  return const CircularProgressIndicator();
+                  return const SizedBox.shrink();
                 }
               },
             ),

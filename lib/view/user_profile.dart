@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:skyclad/providers/providers.dart';
 
 // ウィジェット
 import 'package:skyclad/widgets/post_widget.dart';
 
 // 別スクリーン
-import 'package:skyclad/post_details.dart';
+import 'package:skyclad/view/post_details.dart';
 
 class UserProfileState {
   UserProfileState({required this.profileData, required this.postData});
@@ -19,33 +18,27 @@ class UserProfileState {
 }
 
 class UserProfileNotifier extends StateNotifier<UserProfileState> {
-  UserProfileNotifier()
+  UserProfileNotifier(this.ref)
       : super(UserProfileState(profileData: {}, postData: []));
 
+  final StateNotifierProviderRef<UserProfileNotifier, UserProfileState> ref;
+
   Future<void> initUserProfile({required String actor}) async {
-    final profileData = await fetchProfileData(actor: actor);
-    final postData = await fetchPostData(actor: actor);
+    final profileData = await fetchProfileData(actor: actor); // ref を引数として渡す
+    final postData = await fetchPostData(actor: actor); // ref を引数として渡す
     state = UserProfileState(profileData: profileData, postData: postData);
   }
 
   // ユーザーのプロフィールを取得する
   Future<Map<String, dynamic>> fetchProfileData({required String actor}) async {
-    final session = await bsky.createSession(
-      identifier: dotenv.get('BLUESKY_ID'),
-      password: dotenv.get('BLUESKY_PASSWORD'),
-    );
-    final bluesky = bsky.Bluesky.fromSession(session.data);
+    final bluesky = await ref.read(blueskySessionProvider.future);
     final profile = await bluesky.actors.findProfile(actor: actor);
     return profile.data.toJson();
   }
 
-// ユーザーの投稿を取得する
+  // ユーザーの投稿を取得する
   Future<List<dynamic>> fetchPostData({required String actor}) async {
-    final session = await bsky.createSession(
-      identifier: dotenv.get('BLUESKY_ID'),
-      password: dotenv.get('BLUESKY_PASSWORD'),
-    );
-    final bluesky = bsky.Bluesky.fromSession(session.data);
+    final bluesky = await ref.read(blueskySessionProvider.future);
     final feeds = await bluesky.feeds.findFeed(actor: actor);
     return feeds.data.toJson()['feed'];
   }
@@ -53,7 +46,7 @@ class UserProfileNotifier extends StateNotifier<UserProfileState> {
 
 final userProfileProvider =
     StateNotifierProvider<UserProfileNotifier, UserProfileState>(
-        (ref) => UserProfileNotifier());
+        (ref) => UserProfileNotifier(ref));
 
 class UserProfileScreen extends ConsumerWidget {
   final String actor;
@@ -95,10 +88,15 @@ class UserProfileScreen extends ConsumerWidget {
   // ユーザーをフォローする
   Future<void> followUser(
       BuildContext context, WidgetRef ref, String did) async {
+    final sharedPreferencesRepository =
+        ref.read(sharedPreferencesRepositoryProvider);
+    final id = await sharedPreferencesRepository.getId();
+    final password = await sharedPreferencesRepository.getPassword();
+
     try {
       final session = await bsky.createSession(
-        identifier: dotenv.get('BLUESKY_ID'),
-        password: dotenv.get('BLUESKY_PASSWORD'),
+        identifier: id,
+        password: password,
       );
       final bluesky = bsky.Bluesky.fromSession(session.data);
       await bluesky.graphs.createFollow(did: did);
@@ -117,10 +115,15 @@ class UserProfileScreen extends ConsumerWidget {
 // ユーザーのフォローを解除する
   Future<void> unfollowUser(
       BuildContext context, WidgetRef ref, String did) async {
+    final sharedPreferencesRepository =
+        ref.read(sharedPreferencesRepositoryProvider);
+    final id = await sharedPreferencesRepository.getId();
+    final password = await sharedPreferencesRepository.getPassword();
+
     try {
       final session = await bsky.createSession(
-        identifier: dotenv.get('BLUESKY_ID'),
-        password: dotenv.get('BLUESKY_PASSWORD'),
+        identifier: id,
+        password: password,
       );
       final bluesky = bsky.Bluesky.fromSession(session.data);
       final profileData = ref.read(userProfileProvider).profileData;

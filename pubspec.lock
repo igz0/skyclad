@@ -29,10 +29,10 @@ packages:
     dependency: transitive
     description:
       name: atproto
-      sha256: "1a4419671b3c43341719ecddafc102a2fdae32a2a365cf360b1390c5ef413f50"
+      sha256: deaea468eefe07e29ee17ee3d2464ac138eb5f010760f02e4cb223cc74e27e36
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.7"
+    version: "0.2.8"
   atproto_core:
     dependency: transitive
     description:
@@ -45,10 +45,10 @@ packages:
     dependency: "direct main"
     description:
       name: bluesky
-      sha256: e8620d5c2de82dad80180f1a0fcf3b148a948bc822fd106945a0d3711b0e8a53
+      sha256: d8712cd25c7e4eb6290ad6f4947c2c50ef871aaf68ee44bf0c483b932e0d241b
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.0"
+    version: "0.4.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -126,14 +126,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_dotenv:
-    dependency: "direct main"
-    description:
-      name: flutter_dotenv
-      sha256: d9283d92059a22e9834bc0a31336658ffba77089fb6f3cc36751f1fc7c6661a3
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.0.2"
   flutter_lints:
     dependency: "direct dev"
     description:

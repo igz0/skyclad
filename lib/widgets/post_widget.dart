@@ -1,23 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:linkify/linkify.dart';
 import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:card_swiper/card_swiper.dart';
+import 'package:skyclad/providers/providers.dart';
 
 // 別スクリーン
-import 'package:skyclad/post_details.dart';
+import 'package:skyclad/view/post_details.dart';
 
-class PostWidget extends StatelessWidget {
+// 投稿の詳細を取得するための FutureProvider
+final quotedPostProvider =
+    FutureProvider.family<Map<String, dynamic>, String>((ref, uri) async {
+  final sharedPreferencesRepository =
+      ref.watch(sharedPreferencesRepositoryProvider);
+  final id = await sharedPreferencesRepository.getId();
+  final password = await sharedPreferencesRepository.getPassword();
+
+  final session = await bsky.createSession(
+    identifier: id,
+    password: password,
+  );
+  final bluesky = bsky.Bluesky.fromSession(session.data);
+  final feeds = await bluesky.feeds.findPosts(uris: [bsky.AtUri.parse(uri)]);
+
+  // 引用投稿先のJSONを取得する
+  final jsonFeed = feeds.data.toJson()['posts'][0];
+
+  return jsonFeed;
+});
+
+class PostWidget extends ConsumerWidget {
   final Map<String, dynamic> post;
 
   const PostWidget({required this.post, Key? key}) : super(key: key);
 
   // 投稿のウィジェットを作成する
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     List<Widget> contentWidgets = [];
 
     // 投稿文を追加する
@@ -102,7 +124,7 @@ class PostWidget extends StatelessWidget {
     }
 
     // 引用投稿が含まれていたら追加する
-    contentWidgets.add(_buildQuotedPost(context, post));
+    contentWidgets.add(_buildQuotedPost(context, ref, post));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,23 +132,9 @@ class PostWidget extends StatelessWidget {
     );
   }
 
-  // 引用投稿先のJSONを取得する
-  Future<Map<String, dynamic>> _fetchQuotedPost(String uri) async {
-    final session = await bsky.createSession(
-      identifier: dotenv.get('BLUESKY_ID'),
-      password: dotenv.get('BLUESKY_PASSWORD'),
-    );
-    final bluesky = bsky.Bluesky.fromSession(session.data);
-    final feeds = await bluesky.feeds.findPosts(uris: [bsky.AtUri.parse(uri)]);
-
-    // 引用投稿先のJSONを取得する
-    final jsonFeed = feeds.data.toJson()['posts'][0];
-
-    return jsonFeed;
-  }
-
-  // 引用投稿のウィジェットを作成する
-  Widget _buildQuotedPost(BuildContext context, Map<String, dynamic> post) {
+// 引用投稿のウィジェットを作成する
+  Widget _buildQuotedPost(
+      BuildContext context, WidgetRef ref, Map<String, dynamic> post) {
     if (post['embed'] != null &&
         post['embed']['\$type'] == 'app.bsky.embed.record#view') {
       final quotedPost = post['embed']['record'];
@@ -138,17 +146,17 @@ class PostWidget extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => FutureBuilder(
-                future: _fetchQuotedPost(quotedPost['uri']),
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    }
-                    return PostDetails(post: snapshot.data);
-                  } else {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+              builder: (context) => Consumer(
+                builder: (BuildContext context, WidgetRef ref, _) {
+                  final postProvider =
+                      ref.watch(quotedPostProvider(quotedPost['uri']));
+                  return postProvider.when(
+                    data: (data) => PostDetails(post: data),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (e, stack) =>
+                        Center(child: Text('Error: ${e.toString()}')),
+                  );
                 },
               ),
             ),

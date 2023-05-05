@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:skyclad/login_state_provider.dart';
+import 'package:skyclad/providers/providers.dart';
 
-import 'package:skyclad/main.dart'; // 追加
+import 'package:skyclad/main.dart';
+import 'package:skyclad/view/timeline.dart';
 
 class LoginScreen extends ConsumerWidget {
   LoginScreen({Key? key}) : super(key: key);
