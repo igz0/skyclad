@@ -1,13 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:skyclad/view/user_profile.dart';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skyclad/repository/shared_preferences_repository.dart';
-import 'package:go_router/go_router.dart';
-
-import 'package:skyclad/view/timeline.dart';
-import 'package:skyclad/view/login.dart';
 
 final userProfileProvider =
     StateNotifierProvider<UserProfileNotifier, UserProfileState>(
@@ -27,46 +22,6 @@ final blueskySessionProvider = FutureProvider<bsky.Bluesky>((ref) async {
   return bluesky;
 });
 
-class GoRouterNotifier extends StateNotifier<GoRouter> {
-  GoRouterNotifier() : super(_createGoRouter());
-
-  static GoRouter _createGoRouter() {
-    return GoRouter(
-      routes: [
-        GoRoute(
-          path: '/',
-          pageBuilder: (context, state) => const MaterialPage(child: MyApp()),
-        ),
-        GoRoute(
-          path: '/login',
-          pageBuilder: (context, state) => MaterialPage(child: LoginScreen()),
-        ),
-      ],
-    );
-  }
-
-  void updateRoutes(bool isLoggedIn) {
-    state = GoRouter(
-      routes: [
-        GoRoute(
-          path: '/',
-          pageBuilder: (context, state) =>
-              MaterialPage(child: isLoggedIn ? const MyApp() : LoginScreen()),
-        ),
-        GoRoute(
-          path: '/login',
-          pageBuilder: (context, state) => MaterialPage(child: LoginScreen()),
-        ),
-      ],
-    );
-  }
-}
-
-final goRouterProvider =
-    StateNotifierProvider<GoRouterNotifier, GoRouter>((ref) {
-  return GoRouterNotifier()..updateRoutes(false);
-});
-
 class LoginStateNotifier extends StateNotifier<bool> {
   LoginStateNotifier(this.ref) : super(false) {
     checkLoginStatus();
@@ -81,7 +36,6 @@ class LoginStateNotifier extends StateNotifier<bool> {
     } else {
       state = false;
     }
-    ref.read(goRouterProvider.notifier).updateRoutes(state);
   }
 
   Future<void> login(String id, String password) async {

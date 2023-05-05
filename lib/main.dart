@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:skyclad/repository/shared_preferences_repository.dart';
 
@@ -14,27 +13,12 @@ void main() async {
 
   final isLoggedIn = await SharedPreferencesRepository().isLoggedIn();
 
-  final goRouter = GoRouter(
-    routes: [
-      GoRoute(
-        path: '/',
-        pageBuilder: (context, state) =>
-            MaterialPage(child: isLoggedIn ? const MyApp() : LoginScreen()),
-      ),
-      GoRoute(
-        path: '/login',
-        pageBuilder: (context, state) => MaterialPage(child: LoginScreen()),
-      ),
-    ],
-  );
-
   runApp(
     ProviderScope(
-      child: MaterialApp.router(
+      child: MaterialApp(
         title: 'Skyclad',
         theme: ThemeData.dark(),
-        routerDelegate: goRouter.routerDelegate,
-        routeInformationParser: goRouter.routeInformationParser,
+        home: isLoggedIn ? const MyApp() : LoginScreen(),
       ),
     ),
   );

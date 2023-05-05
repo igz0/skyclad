@@ -128,7 +128,7 @@ class _MyAppState extends ConsumerState<MyApp> {
               sharedPreferences.remove('password'); // ログイン画面に遷移
 
               // ignore: use_build_context_synchronously
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (BuildContext context) => LoginScreen(),

@@ -41,7 +41,6 @@ dependencies:
   url_launcher: ^6.1.10
   card_swiper: ^2.0.4
   flutter_riverpod: ^2.3.6
-  go_router: ^7.0.0
   shared_preferences: ^2.1.0
 
 dev_dependencies:
