@@ -647,6 +647,32 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                   },
                 ),
               ]),
+              Column(children: [
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_horiz),
+                  onSelected: (value) {
+                    if (value == "report") {
+                      // TODO: 投稿を報告する処理をここに書く
+                      // ignore: use_build_context_synchronously
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("投稿を報告しました"),
+                          backgroundColor: Colors.white,
+                        ),
+                      );
+                    }
+                  },
+                  itemBuilder: (BuildContext context) =>
+                      <PopupMenuEntry<String>>[
+                    const PopupMenuItem<String>(
+                      value: "report",
+                      child: ListTile(
+                        title: Text("投稿を報告する"),
+                      ),
+                    ),
+                  ],
+                ),
+              ]),
             ]),
             const Divider(height: 1, thickness: 1, color: Colors.white12),
             const SizedBox(height: 10.0),
