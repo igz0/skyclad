@@ -45,12 +45,11 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   // AppBarを生成する関数
   AppBar? _buildAppBar(int currentIndex) {
-    if (currentIndex == 3) return null;
+    if (currentIndex == 2) return null;
     return AppBar(
       centerTitle: true,
       title: Text([
         'ホーム',
-        '検索',
         '通知',
         'プロフィール',
       ][currentIndex]),
@@ -93,10 +92,6 @@ class _MyAppState extends ConsumerState<MyApp> {
           label: 'ホーム',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.search),
-          label: '検索',
-        ),
-        BottomNavigationBarItem(
           icon: Icon(Icons.notifications),
           label: '通知',
         ),
@@ -133,7 +128,7 @@ class _MyAppState extends ConsumerState<MyApp> {
               sharedPreferences.remove('password'); // ログイン画面に遷移
 
               // ignore: use_build_context_synchronously
-              Navigator.pop(
+              Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (BuildContext context) => LoginScreen(),

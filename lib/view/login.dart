@@ -14,13 +14,7 @@ class LoginScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ScopedReader を WidgetRef に変更
-    final isLoggedIn = ref.watch(loginStateProvider);
-
-    if (isLoggedIn) {
-      final goRouter = GoRouter.of(context);
-      goRouter.go('/');
-    }
+    final goRouter = ref.read(goRouterProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -61,18 +55,14 @@ class LoginScreen extends ConsumerWidget {
                     await ref
                         .read(loginStateProvider.notifier)
                         .login(id, password);
-
-                    ref.read(isLoggedInProvider.notifier).setLoggedIn(true);
-
-                    // ログインに成功した場合、メイン画面に遷移
+                    // ログイン成功後の画面遷移を行います
                     // ignore: use_build_context_synchronously
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const MyApp(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const MyApp()),
                     );
                   } catch (e) {
+                    print(e.toString());
                     // ログインに失敗した場合の処理
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
