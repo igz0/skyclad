@@ -84,31 +84,34 @@ class PostWidget extends ConsumerWidget {
 
       // タップで画像ダイアログを表示する
       contentWidgets.add(
-        GestureDetector(
-          onTap: () => _showImageDialog(context, imageUrls),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: post['embed']['images']
-                  .map<Widget>((image) => Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Image.network(
-                            image['thumb'],
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Center(
-                                child: Icon(Icons.error),
-                              );
-                            },
-                          ),
-                        ),
-                      ))
-                  .toList(),
-            ),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children:
+                post['embed']['images'].asMap().entries.map<Widget>((entry) {
+              int index = entry.key;
+              dynamic image = entry.value;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: GestureDetector(
+                  onTap: () => _showImageDialog(context, imageUrls, index),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image.network(
+                      image['thumb'],
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Icon(Icons.error),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
           ),
         ),
       );
@@ -203,7 +206,8 @@ class PostWidget extends ConsumerWidget {
   }
 
   // 画像をダイアログで表示する
-  void _showImageDialog(BuildContext context, List<String> imageUrls) {
+  void _showImageDialog(
+      BuildContext context, List<String> imageUrls, int initialIndex) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -223,6 +227,9 @@ class PostWidget extends ConsumerWidget {
                   onDismissed: (direction) {
                     Navigator.pop(context);
                   },
+                  dismissThresholds: const {
+                    DismissDirection.vertical: 0.2,
+                  },
                   child: SizedBox(
                     width: screenWidth,
                     height: screenHeight,
@@ -240,6 +247,7 @@ class PostWidget extends ConsumerWidget {
                       },
                       itemCount: imageUrls.length,
                       loop: false,
+                      index: initialIndex,
                     ),
                   ),
                 ),
