@@ -29,26 +29,26 @@ packages:
     dependency: transitive
     description:
       name: atproto
-      sha256: deaea468eefe07e29ee17ee3d2464ac138eb5f010760f02e4cb223cc74e27e36
+      sha256: "98c5c0033cafe2e3c8fe550c3b7eab42838920445c7e284b382458a1a0fa835f"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.8"
+    version: "0.2.9"
   atproto_core:
     dependency: transitive
     description:
       name: atproto_core
-      sha256: "84333c67b7e9033d1604829e255d306e40e98f77ccf0be9dd6c2f0ecd560b74d"
+      sha256: a1954d78df1a4b0da2728f83fdae3c869accba34945d8983ec0a6b0dab8e8c65
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.8"
+    version: "0.2.9"
   bluesky:
     dependency: "direct main"
     description:
       name: bluesky
-      sha256: d8712cd25c7e4eb6290ad6f4947c2c50ef871aaf68ee44bf0c483b932e0d241b
+      sha256: e7cb011c12c8648d4f359610295277d3a80ca549e62c3b0a4f3edb0a75329b38
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.1"
+    version: "0.4.2"
   boolean_selector:
     dependency: transitive
     description:
@@ -89,6 +89,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.17.0"
+  crypto:
+    dependency: transitive
+    description:
+      name: crypto
+      sha256: ff625774173754681d66daaf4a448684fb04b78f902da9cb3d308c19cc5e8bab
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.3"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -533,6 +541,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
+  web_socket_channel:
+    dependency: transitive
+    description:
+      name: web_socket_channel
+      sha256: d88238e5eac9a42bb43ca4e721edba3c08c6354d4a53063afaa568516217621b
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.0"
   win32:
     dependency: transitive
     description:
@@ -553,10 +569,10 @@ packages:
     dependency: transitive
     description:
       name: xrpc
-      sha256: f78927f5168904bfda19a6ba5f89320481362f97e3d45488f4a767817f6f78f2
+      sha256: ff2b513c9f494f5602edf4bfa3abf00a2ba700f7a77e839d17453c2df3948e1f
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.13"
+    version: "0.0.14"
 sdks:
   dart: ">=2.19.6 <3.0.0"
   flutter: ">=3.3.0"
