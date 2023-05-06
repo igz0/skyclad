@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skyclad/providers/providers.dart';
 
 import 'package:skyclad/view/user_profile.dart';
+import 'package:skyclad/view/create_post.dart';
 
 class PostDetails extends ConsumerStatefulWidget {
   final Map<String, dynamic> post;
@@ -576,6 +577,20 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
             const SizedBox(height: 10.0),
             const Divider(height: 1, thickness: 1, color: Colors.white12),
             Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              IconButton(
+                icon: const Icon(Icons.reply),
+                onPressed: () {
+                  print(_post);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CreatePostScreen(
+                        replyJson: _post,
+                      ),
+                    ),
+                  );
+                },
+              ),
               Column(children: [
                 IconButton(
                   icon: _isReposted!

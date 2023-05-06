@@ -1,10 +1,14 @@
 // create_post_screen.dart
+import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skyclad/providers/providers.dart';
 
 class CreatePostScreen extends ConsumerWidget {
   final TextEditingController postController = TextEditingController();
+  final Map<String, dynamic>? replyJson;
+
+  CreatePostScreen({Key? key, this.replyJson}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,7 +44,8 @@ class CreatePostScreen extends ConsumerWidget {
                     if (postController.text.trim().isNotEmpty) {
                       Navigator.pop(context);
 
-                      await _createPost(ref, postController.text.trim());
+                      await _createPost(
+                          ref, postController.text.trim(), replyJson);
                       postController.clear();
                     }
                   },
@@ -54,10 +59,26 @@ class CreatePostScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _createPost(WidgetRef ref, String text) async {
+  // リプライを作成する
+  Future<void> _createPost(
+      WidgetRef ref, String text, Map<String, dynamic>? replyJson) async {
     final bluesky = await ref.watch(blueskySessionProvider.future);
-    await bluesky.feeds.createPost(
-      text: text,
-    );
+
+    // 返信先の情報を取得する
+    final uri = replyJson?['uri'];
+    final cid = replyJson?['cid'];
+
+    if (uri == null) {
+      // リプライ先がない場合は通常の投稿を行う
+      await bluesky.feeds.createPost(
+        text: text,
+      );
+      return;
+    }
+    final strongRef = bsky.StrongRef(cid: cid, uri: bsky.AtUri.parse(uri));
+
+    bsky.ReplyRef replyRef = bsky.ReplyRef(parent: strongRef, root: strongRef);
+
+    await bluesky.feeds.createPost(text: text, reply: replyRef);
   }
 }
