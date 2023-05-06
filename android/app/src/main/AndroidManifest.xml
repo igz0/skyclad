@@ -24,7 +24,7 @@
   </queries>
 
    <application
-        android:label="skyclad"
+        android:label="Skyclad (β)"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
