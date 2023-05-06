@@ -8,18 +8,23 @@ final userProfileProvider =
     StateNotifierProvider<UserProfileNotifier, UserProfileState>(
         (ref) => UserProfileNotifier(ref));
 
-final blueskySessionProvider = FutureProvider<bsky.Bluesky>((ref) async {
+final blueskySessionProvider = StreamProvider<bsky.Bluesky>((ref) async* {
   final sharedPreferencesRepository =
       ref.read(sharedPreferencesRepositoryProvider);
   final id = await sharedPreferencesRepository.getId();
   final password = await sharedPreferencesRepository.getPassword();
 
-  final session = await bsky.createSession(
-    identifier: id,
-    password: password,
-  );
-  final bluesky = bsky.Bluesky.fromSession(session.data);
-  return bluesky;
+  while (true) {
+    final session = await bsky.createSession(
+      identifier: id,
+      password: password,
+    );
+    final bluesky = bsky.Bluesky.fromSession(session.data);
+    yield bluesky;
+
+    // 10分ごとにセッションをリフレッシュ
+    await Future.delayed(const Duration(minutes: 10));
+  }
 });
 
 class LoginStateNotifier extends StateNotifier<bool> {
