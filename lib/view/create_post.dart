@@ -10,7 +10,9 @@ class CreatePostScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('新しい投稿を作成'),
+        backgroundColor: Colors.blue[600],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
