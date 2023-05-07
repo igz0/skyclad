@@ -1,17 +1,22 @@
-// create_post_screen.dart
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skyclad/providers/providers.dart';
 
-class CreatePostScreen extends ConsumerWidget {
-  final TextEditingController postController = TextEditingController();
+class CreatePostScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic>? replyJson;
 
   CreatePostScreen({Key? key, this.replyJson}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  _CreatePostScreenState createState() => _CreatePostScreenState();
+}
+
+class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
+  final TextEditingController postController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -45,7 +50,7 @@ class CreatePostScreen extends ConsumerWidget {
                       Navigator.pop(context);
 
                       await _createPost(
-                          ref, postController.text.trim(), replyJson);
+                          ref, postController.text.trim(), widget.replyJson);
                       postController.clear();
                     }
                   },
