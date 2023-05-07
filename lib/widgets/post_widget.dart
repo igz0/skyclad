@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
+import 'package:skyclad/view/user_profile.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:linkify/linkify.dart';
@@ -59,6 +60,36 @@ class PostWidget extends ConsumerWidget {
               }
             },
         ));
+      }
+    }
+
+    // リプライを検出し、UserProfile画面に遷移するリンクを作成する
+    final replyPattern = RegExp(r'@([a-zA-Z0-9.]+)');
+    for (final match in replyPattern.allMatches(post['record']?['text'])) {
+      final replyText = match.group(0);
+      if (replyText != null) {
+        final replySpanIndex =
+            spans.indexWhere((span) => span.toPlainText().contains(replyText));
+
+        if (replySpanIndex != -1) {
+          spans.removeAt(replySpanIndex);
+          spans.insert(
+              replySpanIndex,
+              TextSpan(
+                text: replyText,
+                style: const TextStyle(color: Colors.blue),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            UserProfileScreen(actor: replyText.substring(1)),
+                      ),
+                    );
+                  },
+              ));
+        }
       }
     }
 

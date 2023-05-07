@@ -124,6 +124,36 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
       }
     }
 
+    // リプライを検出し、UserProfile画面に遷移するリンクを作成する
+    final replyPattern = RegExp(r'@([a-zA-Z0-9.]+)');
+    for (final match in replyPattern.allMatches(post['record']?['text'])) {
+      final replyText = match.group(0);
+      if (replyText != null) {
+        final replySpanIndex =
+            spans.indexWhere((span) => span.toPlainText().contains(replyText));
+
+        if (replySpanIndex != -1) {
+          spans.removeAt(replySpanIndex);
+          spans.insert(
+              replySpanIndex,
+              TextSpan(
+                text: replyText,
+                style: const TextStyle(color: Colors.blue),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            UserProfileScreen(actor: replyText.substring(1)),
+                      ),
+                    );
+                  },
+              ));
+        }
+      }
+    }
+
     contentWidgets.add(
       SelectableText.rich(
         TextSpan(
