@@ -18,7 +18,7 @@ void main() async {
       child: MaterialApp(
         title: 'Skyclad',
         theme: ThemeData.dark(),
-        home: isLoggedIn ? const MyApp() : LoginScreen(),
+        home: isLoggedIn ? const Timeline() : LoginScreen(),
       ),
     ),
   );

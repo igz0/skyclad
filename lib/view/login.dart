@@ -55,7 +55,7 @@ class LoginScreen extends ConsumerWidget {
                     // ignore: use_build_context_synchronously
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => const MyApp()),
+                      MaterialPageRoute(builder: (context) => const Timeline()),
                     );
                   } catch (e) {
                     print(e.toString());

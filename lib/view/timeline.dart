@@ -16,14 +16,14 @@ import 'package:skyclad/view/create_post.dart';
 import 'package:skyclad/widgets/post_widget.dart';
 
 // ウィジェット
-class MyApp extends ConsumerStatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+class Timeline extends ConsumerStatefulWidget {
+  const Timeline({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<MyApp> createState() => _MyAppState();
+  ConsumerState<Timeline> createState() => _TimelineState();
 }
 
-class _MyAppState extends ConsumerState<MyApp> {
+class _TimelineState extends ConsumerState<Timeline> {
   final GlobalKey<BlueskyTimelineState> blueskyTimelineKey =
       GlobalKey<BlueskyTimelineState>();
 
