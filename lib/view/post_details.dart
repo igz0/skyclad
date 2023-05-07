@@ -214,39 +214,6 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
     );
   }
 
-  // リポストされた場合はリポストしたユーザー名を表示する
-  Widget _buildRepostedBy(Map<String, dynamic> feed) {
-    if (feed['reason'] != null &&
-        feed['reason']['\$type'] == 'app.bsky.feed.defs#reasonRepost') {
-      final repostedBy = feed['reason']['by'];
-      return Column(children: [
-        Text(
-          'Reposted by @${repostedBy['displayName']}',
-          style: const TextStyle(color: Colors.white38, fontSize: 12.0),
-        ),
-        const SizedBox(height: 8.0),
-      ]);
-    }
-    return const SizedBox.shrink();
-  }
-
-  // リプライの場合はリプライしたユーザー名を表示する
-  Widget _buildRepliedBy(Map<String, dynamic> feed) {
-    if (feed['reply'] != null) {
-      final repliedTo = feed['reply']['parent']['author'];
-      return Column(
-        children: [
-          Text(
-            'Reply to ${repliedTo['displayName']}',
-            style: const TextStyle(color: Colors.white38, fontSize: 12.0),
-          ),
-          const SizedBox(height: 8.0),
-        ],
-      );
-    }
-    return const SizedBox.shrink();
-  }
-
   // 引用投稿を表示する
   Widget _buildQuotedPost(Map<String, dynamic> post) {
     if (post['embed'] != null &&
@@ -562,8 +529,6 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                _buildRepostedBy(_post),
-                _buildRepliedBy(_post),
                 GestureDetector(
                   onTap: () async {
                     Navigator.push(
