@@ -112,13 +112,48 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
   Widget _buildPostContent(Map<String, dynamic> post) {
     List<Widget> contentWidgets = [];
 
-    // 投稿文を追加する
+    // リプライを検出するための正規表現
+    final replyPattern = RegExp(r'@([a-zA-Z0-9.]+)');
+
+    // 投稿文をリンク付きの要素に分割する
     final elements = linkify(post['record']['text'],
         options: const LinkifyOptions(humanize: false));
     final List<InlineSpan> spans = [];
+
+    // 投稿文の要素をウィジェットに変換する
     for (final element in elements) {
       if (element is TextElement) {
-        spans.add(TextSpan(text: element.text));
+        // リプライを検出し、UserProfile画面に遷移するリンクを作成する
+        final matches = replyPattern.allMatches(element.text);
+        int lastIndex = 0;
+
+        for (final match in matches) {
+          final replyText = match.group(0);
+          if (replyText != null) {
+            spans.add(TextSpan(
+              text: element.text.substring(lastIndex, match.start),
+            ));
+            spans.add(TextSpan(
+              text: replyText,
+              style: const TextStyle(color: Colors.blue),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          UserProfileScreen(actor: replyText.substring(1)),
+                    ),
+                  );
+                },
+            ));
+            lastIndex = match.end;
+          }
+        }
+
+        spans.add(TextSpan(
+          text: element.text.substring(lastIndex),
+        ));
       } else if (element is UrlElement) {
         spans.add(TextSpan(
           text: element.text,
@@ -136,36 +171,6 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
               }
             },
         ));
-      }
-    }
-
-    // リプライを検出し、UserProfile画面に遷移するリンクを作成する
-    final replyPattern = RegExp(r'@([a-zA-Z0-9.]+)');
-    for (final match in replyPattern.allMatches(post['record']?['text'])) {
-      final replyText = match.group(0);
-      if (replyText != null) {
-        final replySpanIndex =
-            spans.indexWhere((span) => span.toPlainText().contains(replyText));
-
-        if (replySpanIndex != -1) {
-          spans.removeAt(replySpanIndex);
-          spans.insert(
-              replySpanIndex,
-              TextSpan(
-                text: replyText,
-                style: const TextStyle(color: Colors.blue),
-                recognizer: TapGestureRecognizer()
-                  ..onTap = () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            UserProfileScreen(actor: replyText.substring(1)),
-                      ),
-                    );
-                  },
-              ));
-        }
       }
     }
 
