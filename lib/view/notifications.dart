@@ -50,6 +50,8 @@ class NotificationScreen extends ConsumerWidget {
         .toList();
 
     List<dynamic> postsJson = [];
+
+    // 25件が投稿を取得できるリミットなので25件ずつ投稿を取得する
     int batchSize = 25;
     for (int i = 0; i < uris.length; i += batchSize) {
       final batchUris = uris.sublist(i, min(i + batchSize, uris.length));
