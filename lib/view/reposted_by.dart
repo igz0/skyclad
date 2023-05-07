@@ -58,8 +58,8 @@ class RepostedByScreen extends ConsumerWidget {
 
   Future<List> _fetchRepostedByUsers(WidgetRef ref, String uri) async {
     final bluesky = await ref.read(blueskySessionProvider.future);
-    final repostedBy =
-        await bluesky.feeds.findRepostedBy(uri: bsky.AtUri.parse(uri));
+    final repostedBy = await bluesky.feeds
+        .findRepostedBy(uri: bsky.AtUri.parse(uri), limit: 100);
 
     final repostedByJson = repostedBy.data.toJson();
     return repostedByJson['repostedBy'];

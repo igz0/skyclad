@@ -39,7 +39,7 @@ class UserProfileNotifier extends StateNotifier<UserProfileState> {
   // ユーザーの投稿を取得する
   Future<List<dynamic>> fetchPostData({required String actor}) async {
     final bluesky = await ref.read(blueskySessionProvider.future);
-    final feeds = await bluesky.feeds.findFeed(actor: actor);
+    final feeds = await bluesky.feeds.findFeed(actor: actor, limit: 100);
     return feeds.data.toJson()['feed'];
   }
 }

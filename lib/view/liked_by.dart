@@ -59,7 +59,8 @@ class LikedByScreen extends ConsumerWidget {
 
   Future<List> _fetchLikedByUsers(WidgetRef ref, String uri) async {
     final bluesky = await ref.read(blueskySessionProvider.future);
-    final likedBy = await bluesky.feeds.findLikes(uri: bsky.AtUri.parse(uri));
+    final likedBy =
+        await bluesky.feeds.findLikes(uri: bsky.AtUri.parse(uri), limit: 100);
 
     final likedByJson = likedBy.data.toJson();
     return likedByJson['likes'];
