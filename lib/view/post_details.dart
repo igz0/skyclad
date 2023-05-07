@@ -1,6 +1,8 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
+import 'package:skyclad/view/liked_by.dart';
+import 'package:skyclad/view/reposted_by.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:linkify/linkify.dart';
 import 'package:flutter/gestures.dart';
@@ -736,21 +738,33 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                         Row(
                           children: [
                             const SizedBox(width: 10.0),
-                            Column(
-                              children: [
-                                Text(
-                                  _post['repostCount'].toString(),
-                                  style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 2.0),
-                                const Text(
-                                  'リポスト',
-                                  style: TextStyle(
-                                      fontSize: 12, color: Colors.white60),
-                                )
-                              ],
+                            GestureDetector(
+                              onTap: () {
+                                // リポストの数字がタップされたときの処理をここに追加します
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        RepostedByScreen(uri: _post['uri']),
+                                  ),
+                                );
+                              },
+                              child: Column(
+                                children: [
+                                  Text(
+                                    _post['repostCount'].toString(),
+                                    style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 2.0),
+                                  const Text(
+                                    'リポスト',
+                                    style: TextStyle(
+                                        fontSize: 12, color: Colors.white60),
+                                  )
+                                ],
+                              ),
                             ),
                             const SizedBox(width: 43.0),
                             const SizedBox(
@@ -761,17 +775,29 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                                   color: Colors.white30),
                             ),
                             const SizedBox(width: 43.0),
-                            Column(
-                              children: [
-                                Text(_post['likeCount'].toString(),
-                                    style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 2.0),
-                                const Text('いいね',
-                                    style: TextStyle(
-                                        fontSize: 12, color: Colors.white60)),
-                              ],
+                            GestureDetector(
+                              onTap: () {
+                                // いいねの数字がタップされたときの処理をここに追加します
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        LikedByScreen(uri: _post['uri']),
+                                  ),
+                                );
+                              },
+                              child: Column(
+                                children: [
+                                  Text(_post['likeCount'].toString(),
+                                      style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 2.0),
+                                  const Text('いいね',
+                                      style: TextStyle(
+                                          fontSize: 12, color: Colors.white60)),
+                                ],
+                              ),
                             )
                           ],
                         )
