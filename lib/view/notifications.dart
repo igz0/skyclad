@@ -23,6 +23,8 @@ class NotificationScreen extends ConsumerWidget {
         return '$authorDisplayName がリポストしました。';
       case 'reply':
         return '$authorDisplayName がリプライしました。';
+      case 'mention':
+        return '$authorDisplayName がメンションしました。';
       case 'quote':
         return '$authorDisplayName が引用リポストしました。';
       default:
