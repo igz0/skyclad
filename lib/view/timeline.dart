@@ -354,26 +354,36 @@ class BlueskyTimelineState extends ConsumerState<BlueskyTimeline> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
-                                      Flexible(
-                                        child: Text(
-                                          author['displayName'] ?? '',
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                              fontSize: 14.0,
-                                              fontWeight: FontWeight.bold),
+                                      Expanded(
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                author['displayName'] ?? '',
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                    fontSize: 14.0,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8.0),
+                                            Flexible(
+                                              child: Text(
+                                                '@${author['handle']}',
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                    color: Colors.white38),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      Flexible(
-                                        child: Text(
-                                          '@${author['handle']}',
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                              color: Colors.white38),
-                                        ),
-                                      ),
+                                      const SizedBox(width: 8.0),
                                       Text(
                                         timeago.format(createdAt, locale: "ja"),
                                         style: const TextStyle(fontSize: 12.0),
