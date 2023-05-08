@@ -3,6 +3,7 @@ import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skyclad/providers/providers.dart';
 import 'package:skyclad/view/user_profile.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class RepostedByScreen extends ConsumerWidget {
   final String uri;
@@ -28,7 +29,19 @@ class RepostedByScreen extends ConsumerWidget {
                   final user = snapshot.data![index];
                   return ListTile(
                     leading: CircleAvatar(
-                      backgroundImage: NetworkImage(user['avatar'] ?? ''),
+                      backgroundImage: user['avatar'] != null
+                          ? NetworkImage(user['avatar'])
+                          : null,
+                      radius: 24,
+                      child: user['avatar'] == null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(24),
+                              child: SvgPicture.asset(
+                                  'assets/default_avatar.svg',
+                                  width: 48,
+                                  height: 48),
+                            )
+                          : null,
                     ),
                     title: Text(user['displayName'] ?? ''),
                     subtitle: Text('@${user['handle']}'),

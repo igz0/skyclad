@@ -3,6 +3,7 @@ import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:math';
 import 'package:skyclad/view/post_details.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:skyclad/providers/providers.dart';
 import 'package:skyclad/view/user_profile.dart';
@@ -118,8 +119,19 @@ class NotificationScreen extends ConsumerWidget {
                               );
                             },
                             child: CircleAvatar(
-                              backgroundImage:
-                                  NetworkImage(author['avatar'] ?? ''),
+                              backgroundImage: author['avatar'] != null
+                                  ? NetworkImage(author['avatar'])
+                                  : null,
+                              radius: 24,
+                              child: author['avatar'] == null
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(24),
+                                      child: SvgPicture.asset(
+                                          'assets/default_avatar.svg',
+                                          width: 48,
+                                          height: 48),
+                                    )
+                                  : null,
                             ),
                           ),
                           title: Text(_getNotificationTitle(notification)),

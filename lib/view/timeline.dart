@@ -4,6 +4,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skyclad/model/current_index.dart';
 import 'package:skyclad/providers/providers.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 // 別スクリーン
 import 'package:skyclad/view/notifications.dart';
@@ -333,21 +334,32 @@ class BlueskyTimelineState extends ConsumerState<BlueskyTimeline> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => UserProfileScreen(
-                                      actor: author['handle'],
-                                    ),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => UserProfileScreen(
+                                    actor: author['handle'],
                                   ),
-                                );
-                              },
-                              child: CircleAvatar(
-                                backgroundImage:
-                                    NetworkImage(author['avatar'] ?? ''),
-                                radius: 24,
-                              )),
+                                ),
+                              );
+                            },
+                            child: CircleAvatar(
+                              backgroundImage: author['avatar'] != null
+                                  ? NetworkImage(author['avatar'])
+                                  : null,
+                              radius: 24,
+                              child: author['avatar'] == null
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(24),
+                                      child: SvgPicture.asset(
+                                          'assets/default_avatar.svg',
+                                          width: 48,
+                                          height: 48),
+                                    )
+                                  : null,
+                            ),
+                          ),
                           const SizedBox(width: 8.0),
                           Flexible(
                             child: Column(

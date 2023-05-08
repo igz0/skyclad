@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skyclad/providers/providers.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:skyclad/view/user_profile.dart';
 import 'package:skyclad/view/create_post.dart';
@@ -369,8 +370,17 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                   );
                 },
                 child: CircleAvatar(
-                  radius: 24.0,
-                  backgroundImage: NetworkImage(author['avatar'] ?? ''),
+                  backgroundImage: author['avatar'] != null
+                      ? NetworkImage(author['avatar'])
+                      : null,
+                  radius: 24,
+                  child: author['avatar'] == null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: SvgPicture.asset('assets/default_avatar.svg',
+                              width: 48, height: 48),
+                        )
+                      : null,
                 ),
               ),
               const SizedBox(width: 10.0),
@@ -468,8 +478,19 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                           );
                         },
                         child: CircleAvatar(
-                          radius: 24.0,
-                          backgroundImage: NetworkImage(author['avatar'] ?? ''),
+                          backgroundImage: author['avatar'] != null
+                              ? NetworkImage(author['avatar'])
+                              : null,
+                          radius: 24,
+                          child: author['avatar'] == null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: SvgPicture.asset(
+                                      'assets/default_avatar.svg',
+                                      width: 48,
+                                      height: 48),
+                                )
+                              : null,
                         ),
                       ),
                       const SizedBox(width: 10.0),
@@ -574,9 +595,19 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                             );
                           },
                           child: CircleAvatar(
-                            backgroundImage:
-                                NetworkImage(_post['author']['avatar'] ?? ''),
-                            radius: 20,
+                            backgroundImage: _post['author']['avatar'] != null
+                                ? NetworkImage(_post['author']['avatar'])
+                                : null,
+                            radius: 24,
+                            child: _post['author']['avatar'] == null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(24),
+                                    child: SvgPicture.asset(
+                                        'assets/default_avatar.svg',
+                                        width: 48,
+                                        height: 48),
+                                  )
+                                : null,
                           ),
                         ),
                         const SizedBox(width: 10.0),

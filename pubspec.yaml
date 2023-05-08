@@ -42,6 +42,7 @@ dependencies:
   card_swiper: ^2.0.4
   flutter_riverpod: ^2.3.6
   shared_preferences: ^2.1.0
+  flutter_svg: ^2.0.5
 
 dev_dependencies:
   flutter_test:
@@ -65,8 +66,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  # - assets/1.jpg
+  assets:
+    - assets/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

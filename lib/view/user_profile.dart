@@ -3,6 +3,7 @@ import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skyclad/providers/providers.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 // ウィジェット
 import 'package:skyclad/widgets/post_widget.dart';
@@ -139,8 +140,17 @@ class UserProfileScreen extends ConsumerWidget {
           Row(
             children: [
               CircleAvatar(
-                backgroundImage: NetworkImage(profile['avatar'] ?? ''),
+                backgroundImage: profile['avatar'] != null
+                    ? NetworkImage(profile['avatar'])
+                    : null,
                 radius: 30,
+                child: profile['avatar'] == null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: SvgPicture.asset('assets/default_avatar.svg',
+                            width: 60, height: 60),
+                      )
+                    : null,
               ),
               const SizedBox(width: 16),
               Column(
@@ -223,8 +233,19 @@ class UserProfileScreen extends ConsumerWidget {
                           );
                         },
                         child: CircleAvatar(
-                          backgroundImage: NetworkImage(author['avatar'] ?? ''),
+                          backgroundImage: author['avatar'] != null
+                              ? NetworkImage(author['avatar'])
+                              : null,
                           radius: 24,
+                          child: author['avatar'] == null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: SvgPicture.asset(
+                                      'assets/default_avatar.svg',
+                                      width: 48,
+                                      height: 48),
+                                )
+                              : null,
                         )),
                     const SizedBox(width: 8.0),
                     Flexible(
