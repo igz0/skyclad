@@ -193,90 +193,91 @@ class UserProfileScreen extends ConsumerWidget {
     final author = post['author'];
     final createdAt = DateTime.parse(post['indexedAt']).toLocal();
 
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PostDetails(post: post),
-          ),
-        );
-      },
-      child: Column(
-        children: [
-          const Divider(height: 0),
-          const SizedBox(height: 10.0),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => UserProfileScreen(
-                          actor: author['handle'],
-                        ),
-                      ),
-                    );
-                  },
-                  child: CircleAvatar(
-                    backgroundImage: NetworkImage(author['avatar'] ?? ''),
-                    radius: 24,
-                  )),
-              const SizedBox(width: 8.0),
-              Flexible(
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Expanded(
-                            child: Row(
+    return Column(children: [
+      const Divider(height: 1, thickness: 1, color: Colors.white12),
+      InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PostDetails(post: post),
+            ),
+          );
+        },
+        child: Container(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => UserProfileScreen(
+                                actor: author['handle'],
+                              ),
+                            ),
+                          );
+                        },
+                        child: CircleAvatar(
+                          backgroundImage: NetworkImage(author['avatar'] ?? ''),
+                          radius: 24,
+                        )),
+                    const SizedBox(width: 8.0),
+                    Flexible(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Flexible(
-                                  child: Text(
-                                    author['displayName'] ?? '',
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                        fontSize: 14.0,
-                                        fontWeight: FontWeight.bold),
+                                Expanded(
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          author['displayName'] ?? '',
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                              fontSize: 14.0,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8.0),
+                                      Flexible(
+                                        child: Text(
+                                          '@${author['handle']}',
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                              color: Colors.white38),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 const SizedBox(width: 8.0),
-                                Flexible(
-                                  child: Text(
-                                    '@${author['handle']}',
-                                    overflow: TextOverflow.ellipsis,
-                                    style:
-                                        const TextStyle(color: Colors.white38),
-                                  ),
+                                Text(
+                                  timeago.format(createdAt, locale: "ja"),
+                                  style: const TextStyle(fontSize: 12.0),
+                                  overflow: TextOverflow.clip,
                                 ),
                               ],
                             ),
-                          ),
-                          const SizedBox(width: 8.0),
-                          Text(
-                            timeago.format(createdAt, locale: "ja"),
-                            style: const TextStyle(fontSize: 12.0),
-                            overflow: TextOverflow.clip,
-                          ),
-                        ],
-                      ),
-                      PostWidget(post: post),
-                      _buildRepostedBy(feed),
-                      _buildRepliedBy(feed),
-                    ]),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10.0),
-        ],
+                            PostWidget(post: post),
+                            _buildRepostedBy(feed),
+                            _buildRepliedBy(feed),
+                          ]),
+                    ),
+                  ],
+                ),
+              ],
+            )),
       ),
-    );
+    ]);
   }
 
   // 必要に応じて、_buildRepostedByと_buildRepliedByメソッドも追加します。
