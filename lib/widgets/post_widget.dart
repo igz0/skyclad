@@ -35,7 +35,7 @@ class PostWidget extends ConsumerWidget {
     List<Widget> contentWidgets = [];
 
     // リプライを検出するための正規表現
-    final replyPattern = RegExp(r'@([a-zA-Z0-9.]+)');
+    final replyPattern = RegExp(r'@([a-zA-Z0-9.-]+)');
 
     // 投稿文をリンク付きの要素に分割する
     final elements = linkify(post['record']?['text'],
