@@ -44,6 +44,7 @@ class _TimelineState extends ConsumerState<Timeline> {
         drawer: _buildDrawer(context),
         drawerEdgeDragWidth: 0, // ドロワーを開くジェスチャーを無効化
       ),
+      locale: WidgetsBinding.instance.window.locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
