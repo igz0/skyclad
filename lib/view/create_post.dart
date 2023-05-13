@@ -1,4 +1,5 @@
 import 'package:bluesky/bluesky.dart' as bsky;
+import 'package:bluesky_text/bluesky_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skyclad/providers/providers.dart';
@@ -67,19 +68,25 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     );
   }
 
-  // リプライを作成する
+  // 投稿を行う
   Future<void> _createPost(
       WidgetRef ref, String text, Map<String, dynamic>? replyJson) async {
     final bluesky = await ref.watch(blueskySessionProvider.future);
+    final blueskyText = BlueskyText(text);
 
-    // 返信先の情報を取得する
+    // ファセットの作成を行う
+    // 参考: https://pub.dev/documentation/bluesky_text/latest/#123-with-blueskyhttpspubdevpackagesbluesky-package
+    final facets = await blueskyText.entities.toFacets();
+
+    // リプライ先の情報を取得する
     final uri = replyJson?['uri'];
     final cid = replyJson?['cid'];
 
     if (uri == null) {
       // リプライ先がない場合は通常の投稿を行う
       await bluesky.feeds.createPost(
-        text: text,
+        text: blueskyText.value,
+        facets: facets.map((e) => bsky.Facet.fromJson(e)).toList(),
       );
       return;
     }
@@ -87,6 +94,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
     bsky.ReplyRef replyRef = bsky.ReplyRef(parent: strongRef, root: strongRef);
 
-    await bluesky.feeds.createPost(text: text, reply: replyRef);
+    await bluesky.feeds.createPost(
+        text: blueskyText.value,
+        reply: replyRef,
+        facets: facets.map((e) => bsky.Facet.fromJson(e)).toList());
   }
 }
