@@ -4,6 +4,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skyclad/providers/providers.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // ウィジェット
 import 'package:skyclad/widgets/post_widget.dart';
@@ -62,7 +63,7 @@ class UserProfileScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('User Profile'),
+        title: Text(AppLocalizations.of(context)!.profile),
         backgroundColor: Colors.blue[600],
       ),
       body: Consumer(
@@ -98,8 +99,9 @@ class UserProfileScreen extends ConsumerWidget {
     } catch (e) {
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("フォローに失敗しました。時間をおいて再度やり直してください。"),
+        SnackBar(
+          // ignore: use_build_context_synchronously
+          content: Text(AppLocalizations.of(context)!.followFaildMessage),
           backgroundColor: Colors.red,
         ),
       );
@@ -121,8 +123,9 @@ class UserProfileScreen extends ConsumerWidget {
     } catch (e) {
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("アンフォローに失敗しました。時間をおいて再度やり直してください。"),
+        SnackBar(
+          // ignore: use_build_context_synchronously
+          content: Text(AppLocalizations.of(context)!.unfollowFaildMessage),
           backgroundColor: Colors.red,
         ),
       );
@@ -168,15 +171,17 @@ class UserProfileScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Text(profile['description'] ?? ''),
           if (profile['viewer']['followedBy'] != null)
-            const Chip(
-              label: Text('Follows you'),
+            Chip(
+              label: Text(AppLocalizations.of(context)!.followsYou),
             ),
           const SizedBox(height: 16),
           Row(
             children: [
-              Text('Followers: ${profile['followersCount']}'),
+              Text(
+                  '${AppLocalizations.of(context)!.followers}: ${profile['followersCount']}'),
               const SizedBox(width: 16),
-              Text('Following: ${profile['followsCount']}'),
+              Text(
+                  '${AppLocalizations.of(context)!.following}: ${profile['followsCount']}'),
             ],
           ),
           const SizedBox(height: 16),
@@ -189,8 +194,8 @@ class UserProfileScreen extends ConsumerWidget {
               }
             },
             child: profile['viewer']['following'] != null
-                ? const Text('Unfollow')
-                : const Text('Follow'),
+                ? Text(AppLocalizations.of(context)!.unfollow)
+                : Text(AppLocalizations.of(context)!.follow),
           ),
         ],
       ),
@@ -202,6 +207,13 @@ class UserProfileScreen extends ConsumerWidget {
     final post = feed['post'];
     final author = post['author'];
     final createdAt = DateTime.parse(post['indexedAt']).toLocal();
+
+    String languageCode = Localizations.localeOf(context).languageCode;
+
+// 英語と日本語以外の言語の場合、英語をデフォルトとして使用する
+    if (languageCode != 'ja') {
+      languageCode = 'en';
+    }
 
     return Column(children: [
       const Divider(height: 1, thickness: 1, color: Colors.white12),
@@ -282,7 +294,8 @@ class UserProfileScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(width: 8.0),
                                 Text(
-                                  timeago.format(createdAt, locale: "ja"),
+                                  timeago.format(createdAt,
+                                      locale: languageCode),
                                   style: const TextStyle(fontSize: 12.0),
                                   overflow: TextOverflow.clip,
                                 ),

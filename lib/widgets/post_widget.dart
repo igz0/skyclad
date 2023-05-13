@@ -8,6 +8,7 @@ import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:card_swiper/card_swiper.dart';
 import 'package:skyclad/providers/providers.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // 別スクリーン
 import 'package:skyclad/view/post_details.dart';
@@ -88,7 +89,9 @@ class PostWidget extends ConsumerWidget {
                     mode: LaunchMode.externalApplication);
               } else {
                 messenger.showSnackBar(
-                  const SnackBar(content: Text("リンクを開けませんでした。")),
+                  SnackBar(content: Text(
+                      // ignore: use_build_context_synchronously
+                      AppLocalizations.of(context)!.errorFailedToOpenUrl)),
                 );
               }
             },
@@ -167,8 +170,9 @@ class PostWidget extends ConsumerWidget {
         post['embed']['\$type'] == 'app.bsky.embed.record#view') {
       final quotedPost = post['embed']['record'];
       final quotedAuthor = quotedPost['author'];
-      final createdAt = DateTime.parse(quotedPost['indexedAt']).toLocal();
+      final createdAt = DateTime.parse(post['indexedAt']).toLocal();
 
+      String languageCode = Localizations.localeOf(context).languageCode;
       return InkWell(
         onTap: () {
           Navigator.push(
@@ -220,7 +224,7 @@ class PostWidget extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    timeago.format(createdAt, locale: "ja"),
+                    timeago.format(createdAt, locale: languageCode),
                     style: const TextStyle(fontSize: 12.0),
                     overflow: TextOverflow.clip,
                   ),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:skyclad/repository/shared_preferences_repository.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // 別スクリーン
 import 'package:skyclad/view/timeline.dart';
@@ -19,6 +21,16 @@ void main() async {
         title: 'Skyclad',
         theme: ThemeData.dark(),
         home: isLoggedIn ? const Timeline() : LoginScreen(),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en'), // English
+          Locale('ja'), // Japanese
+        ],
       ),
     ),
   );

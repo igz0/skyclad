@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skyclad/providers/providers.dart';
 import 'package:skyclad/view/user_profile.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LikedByScreen extends ConsumerWidget {
   final String uri;
@@ -12,11 +13,10 @@ class LikedByScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    print(uri);
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('いいねしたユーザー'),
+        title: Text(AppLocalizations.of(context)!.likedUser),
         backgroundColor: Colors.blue[600],
       ),
       body: FutureBuilder(
@@ -60,7 +60,8 @@ class LikedByScreen extends ConsumerWidget {
                 },
               );
             } else {
-              return const Center(child: Text('いいねしたユーザーがいません'));
+              return Center(
+                  child: Text(AppLocalizations.of(context)!.noUsersLiked));
             }
           } else {
             return const Center(child: CircularProgressIndicator());

@@ -1,0 +1,87 @@
+{
+  "@@locale": "ja",
+  "timeline": "タイムライン",
+  "notifications": "通知",
+  "profile": "プロフィール",
+  "logout": "ログアウト",
+  "cancel": "キャンセル",
+  "post": "投稿",
+  "like": "いいね",
+  "likes": "いいね",
+  "repost": "リポスト",
+  "reposts": "リポスト",
+  "reply": "返信",
+  "followNotification": "{name}さんがあなたをフォローしました。",
+  "@followNotification": {
+    "placeholders": {
+      "name": {
+        "required": true,
+        "description": "The name of the user who followed you"
+      }
+    }
+  },
+  "likeNotification": "{name}さんがあなたの投稿にいいね！しました。",
+  "@likeNotification": {
+    "placeholders": {
+      "name": {
+        "required": true,
+        "description": "The name of the user who liked your post"
+      }
+    }
+  },
+  "repostNotification": "{name}さんがあなたの投稿をリポストしました。",
+  "@repostNotification": {
+    "placeholders": {
+      "name": {
+        "required": true,
+        "description": "The name of the user who reposted your post"
+      }
+    }
+  },
+  "replyNotification": "{name}さんがあなたの投稿にリプライしました。",
+  "@replyNotification": {
+    "placeholders": {
+      "name": {
+        "required": true,
+        "description": "The name of the user who replied to your post"
+      }
+    }
+  },
+  "mentionNotification": "{name}さんがあなたにメンションしました。",
+  "@mentionNotification": {
+    "placeholders": {
+      "name": {
+        "required": true,
+        "description": "The name of the user who mentioned you"
+      }
+    }
+  },
+  "quoteNotification": "{name}さんがあなたの投稿を引用リポストしました。",
+  "@quoteNotification": {
+    "placeholders": {
+      "name": {
+        "required": true,
+        "description": "The name of the user who quoted your post"
+      }
+    }
+  },
+  "unknownNotification": "不明な通知です。",
+  "reportPost": "投稿を報告する",
+  "postReported": "投稿を報告しました。",
+  "whatsUp": "今何してる？",
+  "errorFailedToOpenUrl": "リンクを開けませんでした。",
+  "repostedUser":"リポストしたユーザー",
+  "noUsersReposted":"リポストしたユーザーはいません",  
+  "likedUser": "いいねしたユーザー",
+  "noUsersLiked": "いいねしたユーザーはいません",
+  "follow": "フォロー",
+  "unfollow": "フォロー解除",
+  "followers": "フォロワー",
+  "following": "フォロー中",
+  "followFaildMessage": "フォローに失敗しました。時間をおいて再度やり直してください。",
+  "unfollowFaildMessage": "アンフォローに失敗しました。時間をおいて再度やり直してください。",
+  "followsYou": "フォローされています",
+  "@helloWorld": {
+    "description": "The conventional newborn programmer greeting"
+  }
+}

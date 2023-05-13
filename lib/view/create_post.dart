@@ -2,6 +2,7 @@ import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skyclad/providers/providers.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic>? replyJson;
@@ -20,7 +21,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('新しい投稿を作成'),
+        title: Text(widget.replyJson == null
+            ? AppLocalizations.of(context)!.post
+            : AppLocalizations.of(context)!.reply),
         backgroundColor: Colors.blue[600],
       ),
       body: Padding(
@@ -29,8 +32,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           children: [
             TextField(
               controller: postController,
-              decoration: const InputDecoration(
-                hintText: '投稿内容を入力してください',
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)!.whatsUp,
               ),
               maxLines: 10,
             ),
@@ -42,7 +45,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: const Text('キャンセル'),
+                  child: Text(AppLocalizations.of(context)!.cancel),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -54,7 +57,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                       postController.clear();
                     }
                   },
-                  child: const Text('投稿'),
+                  child: Text(AppLocalizations.of(context)!.post),
                 ),
               ],
             ),

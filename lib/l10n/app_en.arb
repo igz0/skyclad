@@ -1,0 +1,86 @@
+{
+  "timeline": "Timeline",
+  "notifications": "Notifications",
+  "profile": "Profile",
+  "logout": "Logout",
+  "cancel": "Cancel",
+  "post": "Post",
+  "like": "like",
+  "likes": "likes",
+  "repost": "repost",
+  "reposts": "reposts",
+  "reply": "Reply",
+  "followNotification": "{name} followed you.",
+  "@followNotification": {
+    "placeholders": {
+      "name": {
+        "required": true,
+        "description": "The name of the user who followed you"
+      }
+    }
+  },
+  "likeNotification": "{name} liked your post.",
+  "@likeNotification": {
+    "placeholders": {
+      "name": {
+        "required": true,
+        "description": "The name of the user who liked your post"
+      }
+    }
+  },
+  "repostNotification": "{name} reposted your post.",
+  "@repostNotification": {
+    "placeholders": {
+      "name": {
+        "required": true,
+        "description": "The name of the user who reposted your post"
+      }
+    }
+  },
+  "replyNotification": "{name} replied to your post.",
+  "@replyNotification": {
+    "placeholders": {
+      "name": {
+        "required": true,
+        "description": "The name of the user who replied to your post"
+      }
+    }
+  },
+  "mentionNotification": "{name} mentioned you.",
+  "@mentionNotification": {
+    "placeholders": {
+      "name": {
+        "required": true,
+        "description": "The name of the user who mentioned you"
+      }
+    }
+  },
+  "quoteNotification": "{name} quoted your post.",
+  "@quoteNotification": {
+    "placeholders": {
+      "name": {
+        "required": true,
+        "description": "The name of the user who quoted your post"
+      }
+    }
+  },
+  "unknownNotification": "Unknown notification.",
+  "reportPost": "Report post",
+  "postReported": "Post reported.",
+  "whatsUp": "What's up?",
+  "errorFailedToOpenUrl": "Couldn't open the link.",
+  "repostedUser": "Reposted by",
+  "noUsersReposted": "No users reposted.",
+  "likedUser": "Liked by",
+  "noUsersLiked": "No users liked.",
+  "follow": "Follow",
+  "unfollow": "Unfollow",
+  "followers": "Followers",
+  "following": "Following",
+  "followFaildMessage": "Following failed. Please give it some time and try again.",
+  "unfollowFaildMessage": "Unfollowing failed. Please give it some time and try again.",
+  "followsYou": "Follows you",
+  "@helloWorld": {
+    "description": "The conventional newborn programmer greeting"
+  }
+}

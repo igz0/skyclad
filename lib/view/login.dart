@@ -27,7 +27,7 @@ class LoginScreen extends ConsumerWidget {
                 controller: _usernameController, // 追加
                 decoration: const InputDecoration(
                   labelText: 'Username',
-                  hintText: 'Enter your username',
+                  hintText: 'Enter your username(e.g. test.bsky.social)',
                 ),
               ),
               const SizedBox(height: 16.0),
@@ -58,7 +58,6 @@ class LoginScreen extends ConsumerWidget {
                       MaterialPageRoute(builder: (context) => const Timeline()),
                     );
                   } catch (e) {
-                    print(e.toString());
                     // ログインに失敗した場合の処理
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

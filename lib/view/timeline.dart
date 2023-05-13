@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skyclad/model/current_index.dart';
 import 'package:skyclad/providers/providers.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // 別スクリーン
 import 'package:skyclad/view/notifications.dart';
@@ -42,6 +44,16 @@ class _TimelineState extends ConsumerState<Timeline> {
         drawer: _buildDrawer(context),
         drawerEdgeDragWidth: 0, // ドロワーを開くジェスチャーを無効化
       ),
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'), // English
+        Locale('ja'), // Japanese
+      ],
     );
   }
 
@@ -51,9 +63,9 @@ class _TimelineState extends ConsumerState<Timeline> {
     return AppBar(
       centerTitle: true,
       title: Text([
-        'ホーム',
-        '通知',
-        'プロフィール',
+        AppLocalizations.of(context)!.timeline,
+        AppLocalizations.of(context)!.notifications,
+        AppLocalizations.of(context)!.profile,
       ][currentIndex]),
       backgroundColor: Colors.blue[600],
     );
@@ -87,18 +99,18 @@ class _TimelineState extends ConsumerState<Timeline> {
   BottomNavigationBar _buildBottomNavigationBar(int currentIndex) {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      items: const <BottomNavigationBarItem>[
+      items: <BottomNavigationBarItem>[
         BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'ホーム',
+          icon: const Icon(Icons.home),
+          label: AppLocalizations.of(context)!.timeline,
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.notifications),
-          label: '通知',
+          icon: const Icon(Icons.notifications),
+          label: AppLocalizations.of(context)!.notifications,
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.account_circle),
-          label: 'プロフィール',
+          icon: const Icon(Icons.account_circle),
+          label: AppLocalizations.of(context)!.profile,
         ),
       ],
       currentIndex: currentIndex,
@@ -121,7 +133,7 @@ class _TimelineState extends ConsumerState<Timeline> {
             child: Text('Skyclad', style: TextStyle(fontSize: 24)),
           ),
           ListTile(
-            title: const Text('ログアウト'),
+            title: Text(AppLocalizations.of(context)!.logout),
             onTap: () async {
               // ログアウト処理
               final sharedPreferences = await SharedPreferences.getInstance();
@@ -316,6 +328,13 @@ class BlueskyTimelineState extends ConsumerState<BlueskyTimeline> {
           final author = post['author'];
           final createdAt = DateTime.parse(post['indexedAt']).toLocal();
 
+          String languageCode = Localizations.localeOf(context).languageCode;
+
+          // 英語と日本語以外の言語の場合、英語をデフォルトとして使用する
+          if (languageCode != 'ja') {
+            languageCode = 'en';
+          }
+
           return Column(children: [
             InkWell(
               onTap: () {
@@ -397,7 +416,8 @@ class BlueskyTimelineState extends ConsumerState<BlueskyTimeline> {
                                       ),
                                       const SizedBox(width: 8.0),
                                       Text(
-                                        timeago.format(createdAt, locale: "ja"),
+                                        timeago.format(createdAt,
+                                            locale: languageCode),
                                         style: const TextStyle(fontSize: 12.0),
                                         overflow: TextOverflow.clip,
                                       ),

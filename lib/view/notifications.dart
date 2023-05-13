@@ -4,34 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:math';
 import 'package:skyclad/view/post_details.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:skyclad/providers/providers.dart';
 import 'package:skyclad/view/user_profile.dart';
 
 class NotificationScreen extends ConsumerWidget {
   const NotificationScreen({Key? key}) : super(key: key);
-
-  String _getNotificationTitle(Map<String, dynamic> notification) {
-    var author = notification['author'];
-    String authorDisplayName = author['displayName'] ?? '';
-
-    switch (notification['reason']) {
-      case 'follow':
-        return '$authorDisplayName がフォローしました。';
-      case 'like':
-        return '$authorDisplayName がいいね！しました。';
-      case 'repost':
-        return '$authorDisplayName がリポストしました。';
-      case 'reply':
-        return '$authorDisplayName がリプライしました。';
-      case 'mention':
-        return '$authorDisplayName がメンションしました。';
-      case 'quote':
-        return '$authorDisplayName が引用リポストしました。';
-      default:
-        return '不明な通知です。';
-    }
-  }
 
   String _getPostText(Map<String, dynamic> post) {
     final record = post['record'] ?? {};
@@ -68,6 +47,30 @@ class NotificationScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final blueskyAsyncValue = ref.watch(blueskySessionProvider);
+
+    String getNotificationTitle(Map<String, dynamic> notification) {
+      var author = notification['author'];
+      String authorDisplayName = author['displayName'] ?? '';
+      final localizations = AppLocalizations.of(context)!;
+      final reason = notification['reason'] ?? '';
+
+      switch (reason) {
+        case 'follow':
+          return localizations.followNotification(authorDisplayName);
+        case 'like':
+          return localizations.likeNotification(authorDisplayName);
+        case 'repost':
+          return localizations.repostNotification(authorDisplayName);
+        case 'reply':
+          return localizations.replyNotification(authorDisplayName);
+        case 'mention':
+          return localizations.mentionNotification(authorDisplayName);
+        case 'quote':
+          return localizations.quoteNotification(authorDisplayName);
+        default:
+          return localizations.unknownNotification;
+      }
+    }
 
     return Scaffold(
       body: blueskyAsyncValue.when(
@@ -134,7 +137,7 @@ class NotificationScreen extends ConsumerWidget {
                                   : null,
                             ),
                           ),
-                          title: Text(_getNotificationTitle(notification)),
+                          title: Text(getNotificationTitle(notification)),
                           subtitle: Text(_getPostText(post)),
                           trailing: !notification['isRead']
                               ? const Icon(Icons.fiber_manual_record,

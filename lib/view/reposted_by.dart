@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skyclad/providers/providers.dart';
 import 'package:skyclad/view/user_profile.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RepostedByScreen extends ConsumerWidget {
   final String uri;
@@ -15,7 +16,7 @@ class RepostedByScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('リポストしたユーザー'),
+        title: Text(AppLocalizations.of(context)!.repostedUser),
         backgroundColor: Colors.blue[600],
       ),
       body: FutureBuilder(
@@ -59,7 +60,8 @@ class RepostedByScreen extends ConsumerWidget {
                 },
               );
             } else {
-              return const Center(child: Text('リポストしたユーザーがいません'));
+              return Center(
+                  child: Text(AppLocalizations.of(context)!.noUsersReposted));
             }
           } else {
             return const Center(child: CircularProgressIndicator());

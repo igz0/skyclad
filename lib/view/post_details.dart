@@ -11,6 +11,8 @@ import 'package:card_swiper/card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skyclad/providers/providers.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 
 import 'package:skyclad/view/user_profile.dart';
 import 'package:skyclad/view/create_post.dart';
@@ -169,7 +171,9 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                     mode: LaunchMode.externalApplication);
               } else {
                 messenger.showSnackBar(
-                  const SnackBar(content: Text("リンクを開けませんでした。")),
+                  SnackBar(content: Text(
+                      // ignore: use_build_context_synchronously
+                      AppLocalizations.of(context)!.errorFailedToOpenUrl)),
                 );
               }
             },
@@ -245,6 +249,13 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
       final quotedAuthor = quotedPost['author'];
       final createdAt = DateTime.parse(quotedPost['indexedAt']).toLocal();
 
+      String languageCode = Localizations.localeOf(context).languageCode;
+
+      // 英語と日本語以外の言語の場合、英語をデフォルトとして使用する
+      if (languageCode != 'ja') {
+        languageCode = 'en';
+      }
+
       return InkWell(
         onTap: () async {
           final uri = quotedPost['uri'];
@@ -294,7 +305,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                     ),
                   ),
                   Text(
-                    timeago.format(createdAt, locale: "ja"),
+                    timeago.format(createdAt, locale: languageCode),
                     style: const TextStyle(fontSize: 12.0),
                     overflow: TextOverflow.clip,
                   ),
@@ -335,10 +346,19 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
 
     final author = parent['author'];
     final content = parent['record']['text'];
-    final createdAt = DateTime.parse(parent['indexedAt']).toLocal();
 
-    DateFormat format = DateFormat('yyyy/MM/dd HH:mm');
-    String dateStr = format.format(createdAt);
+    final createdAt = DateTime.parse(_post['indexedAt']).toLocal();
+    String dateStr;
+    // ignore: use_build_context_synchronously
+    String locale = Localizations.localeOf(context).toLanguageTag();
+
+    if (locale == 'ja') {
+      DateFormat format = DateFormat('yyyy/MM/dd HH:mm');
+      dateStr = format.format(createdAt);
+    } else {
+      DateFormat format = DateFormat('MM/dd/yyyy h:mm a');
+      dateStr = format.format(createdAt);
+    }
 
     return InkWell(
       onTap: () {
@@ -437,10 +457,19 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
         final feed = replies[index];
         final post = feed['post'];
         final author = post['author'];
-        final createdAt = DateTime.parse(post['indexedAt']).toLocal();
 
-        DateFormat format = DateFormat('yyyy/MM/dd HH:mm');
-        String dateStr = format.format(createdAt);
+        final createdAt = DateTime.parse(_post['indexedAt']).toLocal();
+        String dateStr;
+        // ignore: use_build_context_synchronously
+        String locale = Localizations.localeOf(context).toLanguageTag();
+
+        if (locale == 'ja') {
+          DateFormat format = DateFormat('yyyy/MM/dd HH:mm');
+          dateStr = format.format(createdAt);
+        } else {
+          DateFormat format = DateFormat('MM/dd/yyyy h:mm a');
+          dateStr = format.format(createdAt);
+        }
 
         return Column(
           children: [
@@ -545,10 +574,19 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
         } else if (snapshot.hasData) {
           final _post = snapshot.data!;
           final author = _post['author'];
-          final createdAt = DateTime.parse(_post['indexedAt']).toLocal();
 
-          DateFormat format = DateFormat('yyyy/MM/dd HH:mm');
-          String dateStr = format.format(createdAt);
+          final createdAt = DateTime.parse(_post['indexedAt']).toLocal();
+          String dateStr;
+          // ignore: use_build_context_synchronously
+          String locale = Localizations.localeOf(context).toLanguageTag();
+
+          if (locale == 'ja') {
+            DateFormat format = DateFormat('yyyy/MM/dd HH:mm');
+            dateStr = format.format(createdAt);
+          } else {
+            DateFormat format = DateFormat('MM/dd/yyyy h:mm a');
+            dateStr = format.format(createdAt);
+          }
 
           bool isLiked = _post['viewer']['like'] != null;
           bool isReposted = _post['viewer']['repost'] != null;
@@ -741,8 +779,10 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                                   // TODO: 投稿を報告する処理をここに書く
                                   // ignore: use_build_context_synchronously
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text("投稿を報告しました"),
+                                    SnackBar(
+                                      content: Text(
+                                          AppLocalizations.of(context)!
+                                              .postReported),
                                       backgroundColor: Colors.white,
                                     ),
                                   );
@@ -750,10 +790,11 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                               },
                               itemBuilder: (BuildContext context) =>
                                   <PopupMenuEntry<String>>[
-                                const PopupMenuItem<String>(
+                                PopupMenuItem<String>(
                                   value: "report",
                                   child: ListTile(
-                                    title: Text("投稿を報告する"),
+                                    title: Text(AppLocalizations.of(context)!
+                                        .reportPost),
                                   ),
                                 ),
                               ],
@@ -789,9 +830,12 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                                         fontWeight: FontWeight.bold),
                                   ),
                                   const SizedBox(height: 2.0),
-                                  const Text(
-                                    'リポスト',
-                                    style: TextStyle(
+                                  Text(
+                                    // リポスト数が2以上のときは複数形を表示する
+                                    2 <= _post['repostCount']
+                                        ? AppLocalizations.of(context)!.reposts
+                                        : AppLocalizations.of(context)!.repost,
+                                    style: const TextStyle(
                                         fontSize: 12, color: Colors.white60),
                                   )
                                 ],
@@ -824,8 +868,12 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                                           fontSize: 15,
                                           fontWeight: FontWeight.bold)),
                                   const SizedBox(height: 2.0),
-                                  const Text('いいね',
-                                      style: TextStyle(
+                                  Text(
+                                      // いいね数が2以上のときは複数形を表示する
+                                      2 <= _post['likeCount']
+                                          ? AppLocalizations.of(context)!.likes
+                                          : AppLocalizations.of(context)!.like,
+                                      style: const TextStyle(
                                           fontSize: 12, color: Colors.white60)),
                                 ],
                               ),
