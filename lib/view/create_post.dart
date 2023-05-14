@@ -30,6 +30,20 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             ? AppLocalizations.of(context)!.post
             : AppLocalizations.of(context)!.reply),
         backgroundColor: Colors.blue[600],
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.send),
+            onPressed: () async {
+              if (postController.text.trim().isNotEmpty) {
+                Navigator.pop(context);
+                await _createPost(
+                    ref, postController.text.trim(), widget.replyJson);
+                postController.clear();
+                imageFiles.clear();
+              }
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -44,7 +58,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             ),
             Container(
               alignment: Alignment.centerLeft,
-              child: ElevatedButton(
+              child: OutlinedButton(
                 onPressed: imageFiles.length < 4
                     ? () async {
                         final pickedFile = await ImagePicker().pickImage(
@@ -99,31 +113,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 16.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text(AppLocalizations.of(context)!.cancel),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (postController.text.trim().isNotEmpty) {
-                      Navigator.pop(context);
-                      await _createPost(
-                          ref, postController.text.trim(), widget.replyJson);
-                      postController.clear();
-                      imageFiles.clear();
-                    }
-                  },
-                  child: Text(AppLocalizations.of(context)!.post),
-                ),
-              ],
-            ),
           ],
         ),
       ),
