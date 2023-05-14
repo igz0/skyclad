@@ -44,7 +44,7 @@ class _TimelineState extends ConsumerState<Timeline> {
         drawer: _buildDrawer(context),
         drawerEdgeDragWidth: 0, // ドロワーを開くジェスチャーを無効化
       ),
-      locale: WidgetsBinding.instance.window.locale,
+      locale: Localizations.localeOf(context),
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -162,7 +162,7 @@ class _TimelineState extends ConsumerState<Timeline> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (BuildContext context) => CreatePostScreen(),
+            builder: (BuildContext context) => const CreatePostScreen(),
           ),
         );
       },
