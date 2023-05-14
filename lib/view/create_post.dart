@@ -8,10 +8,10 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class CreatePostScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic>? replyJson;
 
-  CreatePostScreen({Key? key, this.replyJson}) : super(key: key);
+  const CreatePostScreen({Key? key, this.replyJson}) : super(key: key);
 
   @override
-  _CreatePostScreenState createState() => _CreatePostScreenState();
+  ConsumerState<CreatePostScreen> createState() => _CreatePostScreenState();
 }
 
 class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
