@@ -571,10 +571,10 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else if (snapshot.hasData) {
-          final _post = snapshot.data!;
-          final author = _post['author'];
+          final post = snapshot.data!;
+          final author = post['author'];
 
-          final createdAt = DateTime.parse(_post['indexedAt']).toLocal();
+          final createdAt = DateTime.parse(post['indexedAt']).toLocal();
           String dateStr;
           // ignore: use_build_context_synchronously
           String locale = Localizations.localeOf(context).toLanguageTag();
@@ -587,8 +587,8 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
             dateStr = format.format(createdAt);
           }
 
-          bool isLiked = _post['viewer']['like'] != null;
-          bool isReposted = _post['viewer']['repost'] != null;
+          bool isLiked = post['viewer']['like'] != null;
+          bool isReposted = post['viewer']['repost'] != null;
 
           return Scaffold(
             appBar: AppBar(
@@ -603,7 +603,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     FutureBuilder(
-                      future: _buildParentPost(context, _post),
+                      future: _buildParentPost(context, post),
                       builder: (BuildContext context,
                           AsyncSnapshot<Widget> snapshot) {
                         if (snapshot.connectionState == ConnectionState.done) {
@@ -626,17 +626,17 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => UserProfileScreen(
-                                  actor: _post['author']['handle'],
+                                  actor: post['author']['handle'],
                                 ),
                               ),
                             );
                           },
                           child: CircleAvatar(
-                            backgroundImage: _post['author']['avatar'] != null
-                                ? NetworkImage(_post['author']['avatar'])
+                            backgroundImage: post['author']['avatar'] != null
+                                ? NetworkImage(post['author']['avatar'])
                                 : null,
                             radius: 24,
-                            child: _post['author']['avatar'] == null
+                            child: post['author']['avatar'] == null
                                 ? ClipRRect(
                                     borderRadius: BorderRadius.circular(24),
                                     child: SvgPicture.asset(
@@ -667,7 +667,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                       ],
                     ),
                     const SizedBox(height: 10.0),
-                    _buildPostContent(_post),
+                    _buildPostContent(post),
                     const SizedBox(height: 15.0),
                     Text(
                       dateStr,
@@ -687,7 +687,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => CreatePostScreen(
-                                    replyJson: _post,
+                                    replyJson: post,
                                   ),
                                 ),
                               );
@@ -703,9 +703,9 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                                 setState(() {
                                   _isReposted = !_isReposted!;
                                   if (_isReposted!) {
-                                    _post['repostCount'] += 1;
+                                    post['repostCount'] += 1;
                                   } else {
-                                    _post['repostCount'] -= 1;
+                                    post['repostCount'] -= 1;
                                   }
                                 });
 
@@ -716,16 +716,16 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                                   // リポストを取り消し
                                   await bluesky.repositories.deleteRecord(
                                     uri: bsky.AtUri.parse(
-                                        _post['viewer']['repost']),
+                                        post['viewer']['repost']),
                                   );
                                 } else {
                                   // リポスト処理
                                   final repostedRecord =
                                       await bluesky.feeds.createRepost(
-                                    cid: _post['cid'],
-                                    uri: bsky.AtUri.parse(_post['uri']),
+                                    cid: post['cid'],
+                                    uri: bsky.AtUri.parse(post['uri']),
                                   );
-                                  _post['viewer']['repost'] = {
+                                  post['viewer']['repost'] = {
                                     'uri': repostedRecord.data.uri
                                   };
                                 }
@@ -742,9 +742,9 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                                 setState(() {
                                   _isLiked = !_isLiked!;
                                   if (_isLiked!) {
-                                    _post['likeCount'] += 1;
+                                    post['likeCount'] += 1;
                                   } else {
-                                    _post['likeCount'] -= 1;
+                                    post['likeCount'] -= 1;
                                   }
                                 });
 
@@ -755,16 +755,16 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                                   // いいねを取り消し
                                   await bluesky.repositories.deleteRecord(
                                     uri: bsky.AtUri.parse(
-                                        _post['viewer']['like']),
+                                        post['viewer']['like']),
                                   );
                                 } else {
                                   // いいね処理
                                   final likedRecord =
                                       await bluesky.feeds.createLike(
-                                    cid: _post['cid'],
-                                    uri: bsky.AtUri.parse(_post['uri']),
+                                    cid: post['cid'],
+                                    uri: bsky.AtUri.parse(post['uri']),
                                   );
-                                  _post['viewer']
+                                  post['viewer']
                                       ['like'] = {'uri': likedRecord.data.uri};
                                 }
                               },
@@ -816,14 +816,14 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        RepostedByScreen(uri: _post['uri']),
+                                        RepostedByScreen(uri: post['uri']),
                                   ),
                                 );
                               },
                               child: Column(
                                 children: [
                                   Text(
-                                    _post['repostCount'].toString(),
+                                    post['repostCount'].toString(),
                                     style: const TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold),
@@ -831,7 +831,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                                   const SizedBox(height: 2.0),
                                   Text(
                                     // リポスト数が2以上のときは複数形を表示する
-                                    2 <= _post['repostCount']
+                                    2 <= post['repostCount']
                                         ? AppLocalizations.of(context)!.reposts
                                         : AppLocalizations.of(context)!.repost,
                                     style: const TextStyle(
@@ -856,20 +856,20 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        LikedByScreen(uri: _post['uri']),
+                                        LikedByScreen(uri: post['uri']),
                                   ),
                                 );
                               },
                               child: Column(
                                 children: [
-                                  Text(_post['likeCount'].toString(),
+                                  Text(post['likeCount'].toString(),
                                       style: const TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.bold)),
                                   const SizedBox(height: 2.0),
                                   Text(
                                       // いいね数が2以上のときは複数形を表示する
-                                      2 <= _post['likeCount']
+                                      2 <= post['likeCount']
                                           ? AppLocalizations.of(context)!.likes
                                           : AppLocalizations.of(context)!.like,
                                       style: const TextStyle(
@@ -883,7 +883,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                     ),
                     const SizedBox(height: 10.0),
                     FutureBuilder(
-                      future: _buildThreadPost(context, _post),
+                      future: _buildThreadPost(context, post),
                       builder: (BuildContext context,
                           AsyncSnapshot<Widget> snapshot) {
                         if (snapshot.connectionState == ConnectionState.done) {

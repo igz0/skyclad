@@ -9,7 +9,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class LikedByScreen extends ConsumerWidget {
   final String uri;
 
-  LikedByScreen({required this.uri});
+  const LikedByScreen({Key? key, required this.uri}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -21,7 +21,7 @@ void main() async {
         title: 'Skyclad',
         theme: ThemeData.dark(),
         home: isLoggedIn ? const Timeline() : LoginScreen(),
-        locale: WidgetsBinding.instance.window.locale,
+        locale: WidgetsBinding.instance.platformDispatcher.locales.first,
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,

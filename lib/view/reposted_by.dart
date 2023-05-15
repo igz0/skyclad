@@ -9,7 +9,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class RepostedByScreen extends ConsumerWidget {
   final String uri;
 
-  RepostedByScreen({required this.uri});
+  const RepostedByScreen({Key? key, required this.uri}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

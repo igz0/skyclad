@@ -45,7 +45,6 @@ class LoginStateNotifier extends StateNotifier<bool> {
 
   Future<void> login(String id, String password) async {
     try {
-      // TODO: セッション情報をRiverpodで管理する
       await bsky.createSession(
         identifier: id,
         password: password,
@@ -57,7 +56,6 @@ class LoginStateNotifier extends StateNotifier<bool> {
 
       state = true;
     } catch (e) {
-      print(e.toString());
       // ログインに失敗した場合の処理
       throw Exception('Login failed.');
     }
