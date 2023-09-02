@@ -33,7 +33,7 @@ For help getting started with Flutter, view the official
 [documentation](https://flutter.io/).
 
 ```zsh
-$ git clone ssh://github.com/igz0/skyclad.git
+$ git clone git@github.com:igz0/skyclad.git
 $ cd skyclad
 $ flutter run
 ```
