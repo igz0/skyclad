@@ -1,16 +1,49 @@
-# skyclad
+# Skyclad
 
-A new Flutter project.
+Skyclad is an experimental ATP/Bluesky client app for iOS and Android by Flutter.
+
+## Installation
+
+iOS: [TestFlight](https://testflight.apple.com/join/TUCMYXnq)<br>
+Android: [Download APK](https://drive.google.com/file/d/1UIjftb8LLRvLcTHzcukOga1iSlylIvD8/view?usp=share_link)
+
+## Screenshots
+
+English is also supported.<br>
+<img src="https://github.com/igz0/skyclad/assets/37741728/3d8f4772-787c-460a-a717-93526b690e58" width="25%">
+<img src="https://github.com/igz0/skyclad/assets/37741728/19f4b4bd-b174-4f18-b698-5470c4f9fe5b" width="25%"><br>
+<img src="https://github.com/igz0/skyclad/assets/37741728/a70b14ba-370d-4124-9f66-aa9911aea1a5" width="25%">
+<img src="https://github.com/igz0/skyclad/assets/37741728/09badc34-e21a-4a33-9013-cba375a323e4" width="25%">
+
+## Features
+
+✅ Login<br>
+✅ Home feed (Timeline)<br>
+✅ Notifications feed<br>
+✅ Author feed (Profile viewer)<br>
+✅ Like / Repost<br>
+✅ Send Post / Reply<br>
+✅ Upload an image<br>
+✅ Image preview<br>
+✅ Follow / Unfollow user<br>
+✅ i18n support (en-US / ja-JP)<br>
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+For help getting started with Flutter, view the official
+[documentation](https://flutter.io/).
 
-A few resources to get you started if this is your first Flutter project:
+```zsh
+$ git clone ssh://github.com/igz0/skyclad.git
+$ cd skyclad
+$ flutter run
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Notes
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+I'm developing this app in my free time, so I appreciate feedback and welcome PRs!
+
+## License
+
+[![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](https://www.gnu.org/licenses/gpl-3.0.en.html)<br>
+Skyclad is licensed under the [GNU GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html).
