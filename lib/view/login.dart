@@ -1,3 +1,4 @@
+import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skyclad/providers/providers.dart';
@@ -7,6 +8,9 @@ import 'package:skyclad/view/timeline.dart';
 class LoginScreen extends ConsumerWidget {
   LoginScreen({Key? key}) : super(key: key);
 
+  static const _defaultService = 'bsky.social';
+
+  final _serviceController = TextEditingController(text: _defaultService);
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
@@ -24,9 +28,17 @@ class LoginScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextField(
+                controller: _serviceController,
+                decoration: const InputDecoration(
+                  labelText: 'Service',
+                  hintText: _defaultService,
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              TextField(
                 controller: _usernameController, // 追加
                 decoration: const InputDecoration(
-                  labelText: 'Username',
+                  labelText: 'Username or email address',
                   hintText: 'Enter your username(e.g. test.bsky.social)',
                 ),
               ),
@@ -35,22 +47,38 @@ class LoginScreen extends ConsumerWidget {
                 controller: _passwordController, // 追加
                 obscureText: true,
                 decoration: const InputDecoration(
-                  labelText: 'Password',
-                  hintText: 'Enter your password',
+                  labelText: 'App Password',
+                  hintText: 'Enter your app password',
                 ),
               ),
               const SizedBox(height: 32.0),
               ElevatedButton(
                 onPressed: () async {
-                  // 入力されたIDとパスワードを取得
-                  final id = _usernameController.text.trim();
+                  // 入力された認証情報を取得
+                  String service = _serviceController.text.trim();
+                  String id = _usernameController.text.trim();
                   final password = _passwordController.text.trim();
+
+                  if (service.isEmpty) {
+                    //* サービスが未入力の場合は"bsky.social"を強制する
+                    service = _serviceController.text = _defaultService;
+                  }
+
+                  if (!id.contains('.')) {
+                    //* ドメインの入力を省略可能にする。
+                    id += '.$service';
+                  }
 
                   // ログイン処理を実行
                   try {
+                    if (!bsky.isValidAppPassword(password)) {
+                      //! App Passwordの使用を強制する。
+                      throw Exception('Not a valid app password.');
+                    }
+
                     await ref
                         .read(loginStateProvider.notifier)
-                        .login(id, password);
+                        .login(service, id, password);
                     // ログイン成功後の画面遷移を行います
                     // ignore: use_build_context_synchronously
                     Navigator.pushReplacement(

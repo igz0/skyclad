@@ -138,6 +138,7 @@ class _TimelineState extends ConsumerState<Timeline> {
             onTap: () async {
               // ログアウト処理
               final sharedPreferences = await SharedPreferences.getInstance();
+              sharedPreferences.remove('service');
               sharedPreferences.remove('id');
               sharedPreferences.remove('password'); // ログイン画面に遷移
 
