@@ -8,12 +8,11 @@ iOS: [TestFlight](https://testflight.apple.com/join/TUCMYXnq)<br>
 Android: [Download APK](https://drive.google.com/file/d/1UIjftb8LLRvLcTHzcukOga1iSlylIvD8/view?usp=share_link)
 
 ## Screenshots
-
-English is also supported.<br>
-<img src="https://github.com/igz0/skyclad/assets/37741728/3d8f4772-787c-460a-a717-93526b690e58" width="25%">
-<img src="https://github.com/igz0/skyclad/assets/37741728/19f4b4bd-b174-4f18-b698-5470c4f9fe5b" width="25%"><br>
-<img src="https://github.com/igz0/skyclad/assets/37741728/a70b14ba-370d-4124-9f66-aa9911aea1a5" width="25%">
-<img src="https://github.com/igz0/skyclad/assets/37741728/09badc34-e21a-4a33-9013-cba375a323e4" width="25%">
+English is also supported!!<br>
+<img src="https://github.com/igz0/skyclad/assets/37741728/5f2424fe-d441-4fb7-8aed-0208706ad0b1" width="25%">
+<img src="https://github.com/igz0/skyclad/assets/37741728/3868ec18-76c4-4178-87d3-19031e880f74" width="25%"><br>
+<img src="https://github.com/igz0/skyclad/assets/37741728/da8c91e3-56b7-4d68-a97e-b87b523b3d7e" width="25%">
+<img src="https://github.com/igz0/skyclad/assets/37741728/f033bd09-3494-4095-a51a-fc7a65e44125" width="25%">
 
 ## Features
 
