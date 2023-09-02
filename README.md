@@ -41,8 +41,3 @@ $ flutter run
 ## Notes
 
 I'm developing this app in my free time, so I appreciate feedback and welcome PRs!
-
-## License
-
-[![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](https://www.gnu.org/licenses/gpl-3.0.en.html)<br>
-Skyclad is licensed under the [GNU GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html).
