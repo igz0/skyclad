@@ -135,13 +135,14 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     // 画像をアップロードする
     List<bsky.Image> images = [];
     for (var imageFile in imageFiles) {
-      final uploaded = await bluesky.repositories.uploadBlob(imageFile);
+      final uploaded = await bluesky.repositories.uploadBlob(
+        imageFile.readAsBytesSync(),
+      );
+
       images.add(
         bsky.Image(
           alt: "",
-          image: bsky.BlobContext.blob(
-            data: uploaded.data.blob,
-          ),
+          image: uploaded.data.blob,
         ),
       );
     }
@@ -171,7 +172,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     await bluesky.feeds.createPost(
       text: blueskyText.value,
       reply: replyRef,
-      facets: facets.map((e) => bsky.Facet.fromJson(e)).toList(),
+      facets: facets.map(bsky.Facet.fromJson).toList(),
       embed: embed,
     );
   }
