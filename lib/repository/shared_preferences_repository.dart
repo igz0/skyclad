@@ -14,6 +14,14 @@ class SharedPreferencesRepository {
     return _sharedPreferences!;
   }
 
+  Future<String> getService() async {
+    return (await sharedPreferences).getString('service') ?? '';
+  }
+
+  Future<void> setService(String service) async {
+    (await sharedPreferences).setString('service', service);
+  }
+
   Future<String> getId() async {
     return (await sharedPreferences).getString('id') ?? '';
   }

@@ -11,15 +11,22 @@ final userProfileProvider =
 final blueskySessionProvider = StreamProvider<bsky.Bluesky>((ref) async* {
   final sharedPreferencesRepository =
       ref.read(sharedPreferencesRepositoryProvider);
+  final service = await sharedPreferencesRepository.getService();
   final id = await sharedPreferencesRepository.getId();
   final password = await sharedPreferencesRepository.getPassword();
 
   while (true) {
     final session = await bsky.createSession(
+      service: service,
       identifier: id,
       password: password,
     );
-    final bluesky = bsky.Bluesky.fromSession(session.data);
+
+    final bluesky = bsky.Bluesky.fromSession(
+      session.data,
+      service: service,
+    );
+
     yield bluesky;
 
     // 10分ごとにセッションをリフレッシュ
@@ -36,21 +43,25 @@ class LoginStateNotifier extends StateNotifier<bool> {
 
   Future<void> checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
-    if (prefs.containsKey('id') && prefs.containsKey('password')) {
+    if (prefs.containsKey('service') &&
+        prefs.containsKey('id') &&
+        prefs.containsKey('password')) {
       state = true;
     } else {
       state = false;
     }
   }
 
-  Future<void> login(String id, String password) async {
+  Future<void> login(String service, String id, String password) async {
     try {
       await bsky.createSession(
+        service: service,
         identifier: id,
         password: password,
       );
-      // ログインに成功したら、IDとパスワードを保存
+      // ログインに成功したら、認証情報を保存
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('service', service);
       await prefs.setString('id', id);
       await prefs.setString('password', password);
 
