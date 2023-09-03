@@ -5,7 +5,7 @@ class SharedPreferencesRepository {
 
   Future<bool> isLoggedIn() async {
     final sharedPreferences = await SharedPreferences.getInstance();
-    return sharedPreferences.getString('id') != null;
+    return sharedPreferences.getString('service') != null;
   }
 
   Future<SharedPreferences> get sharedPreferences async {
