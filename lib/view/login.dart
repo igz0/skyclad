@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skyclad/providers/providers.dart';
 
 import 'package:skyclad/view/timeline.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends ConsumerWidget {
   LoginScreen({Key? key}) : super(key: key);
@@ -16,6 +17,8 @@ class LoginScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
@@ -46,9 +49,21 @@ class LoginScreen extends ConsumerWidget {
               TextField(
                 controller: _passwordController, // 追加
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'App Password',
                   hintText: 'Enter your app password',
+                  suffixIcon: Padding(
+                    padding: const EdgeInsets.only(right: 6.0),
+                    child: IconButton(
+                      onPressed: () => launchUrl(
+                        Uri.https('bsky.app', '/settings/app-passwords'),
+                      ),
+                      icon: Icon(
+                        Icons.help_outline,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 32.0),
