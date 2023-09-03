@@ -1,9 +1,10 @@
+import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:skyclad/view/user_profile.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:linkify/linkify.dart';
 import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:card_swiper/card_swiper.dart';
@@ -34,30 +35,71 @@ class PostWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     List<Widget> contentWidgets = [];
+    List<InlineSpan> spans = [];
 
-    // リプライを検出するための正規表現
-    final replyPattern = RegExp(r'@([a-zA-Z0-9.-]+)');
+    final text = post['record']?['text'] ?? '';
 
-    // 投稿文をリンク付きの要素に分割する
-    final elements = linkify(post['record']?['text'],
-        options: const LinkifyOptions(humanize: false));
-    final List<InlineSpan> spans = [];
+    // facetsを取得する。facetsにはリンクやメンションなどの情報が含まれる
+    final facets = post['record']['facets'] as List? ?? [];
 
-    // 投稿文の要素をウィジェットに変換する
-    for (final element in elements) {
-      if (element is TextElement) {
-        // リプライを検出し、UserProfile画面に遷移するリンクを作成する
-        final matches = replyPattern.allMatches(element.text);
-        int lastIndex = 0;
+    // 投稿文をバイトの形式でエンコードする
+    final facetBytes = utf8.encode(text);
+    var lastFacetEndByte = 0;
 
-        for (final match in matches) {
-          final replyText = match.group(0);
-          if (replyText != null) {
-            spans.add(TextSpan(
-              text: element.text.substring(lastIndex, match.start),
-            ));
-            spans.add(TextSpan(
-              text: replyText,
+    // 各facetに対する処理
+    for (final facet in facets) {
+      for (final feature in facet['features']) {
+        final byteStart = facet['index']['byteStart'];
+
+        // バイトの範囲が投稿文の範囲を超えていたら、範囲を投稿文の範囲に合わせる
+        final byteEnd = min<int>(facet['index']['byteEnd'], facetBytes.length);
+
+        // 関連するテキスト部分をバイトからデコードする
+        final facetText = utf8.decode(
+          facetBytes.sublist(
+            byteStart,
+            byteEnd,
+          ),
+        );
+
+        // 前のfacetの終了位置から、現在のfacetの開始位置までのテキストを追加する
+        if (facet['index']['byteStart'] > lastFacetEndByte) {
+          spans.add(
+            TextSpan(
+                text: utf8.decode(facetBytes.sublist(
+                    lastFacetEndByte, facet['index']['byteStart']))),
+          );
+        }
+
+        // facetがリンクの場合の処理
+        if (feature['\$type'] == 'app.bsky.richtext.facet#link') {
+          spans.add(
+            TextSpan(
+              text: facetText,
+              style: const TextStyle(color: Colors.blue),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  if (await canLaunchUrl(Uri.parse(feature['uri']))) {
+                    await launchUrl(Uri.parse(feature['uri']),
+                        mode: LaunchMode.externalApplication);
+                  } else {
+                    messenger.showSnackBar(
+                      SnackBar(content: Text(
+                          // ignore: use_build_context_synchronously
+                          AppLocalizations.of(context)!.errorFailedToOpenUrl)),
+                    );
+                  }
+                },
+            ),
+          );
+        }
+
+        // facetがメンションの場合の処理
+        else if (feature['\$type'] == 'app.bsky.richtext.facet#mention') {
+          spans.add(
+            TextSpan(
+              text: facetText,
               style: const TextStyle(color: Colors.blue),
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
@@ -65,41 +107,27 @@ class PostWidget extends ConsumerWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          UserProfileScreen(actor: replyText.substring(1)),
+                          UserProfileScreen(actor: feature['did']),
                     ),
                   );
                 },
-            ));
-            lastIndex = match.end;
-          }
+            ),
+          );
+        }
+        // その他のfacetの場合の処理
+        else {
+          spans.add(TextSpan(text: facetText));
         }
 
-        spans.add(TextSpan(
-          text: element.text.substring(lastIndex),
-        ));
-      } else if (element is UrlElement) {
-        spans.add(TextSpan(
-          text: element.text,
-          style: const TextStyle(color: Colors.blue),
-          recognizer: TapGestureRecognizer()
-            ..onTap = () async {
-              final messenger = ScaffoldMessenger.of(context);
-              if (await canLaunchUrl(Uri.parse(element.url))) {
-                await launchUrl(Uri.parse(element.url),
-                    mode: LaunchMode.externalApplication);
-              } else {
-                messenger.showSnackBar(
-                  SnackBar(content: Text(
-                      // ignore: use_build_context_synchronously
-                      AppLocalizations.of(context)!.errorFailedToOpenUrl)),
-                );
-              }
-            },
-        ));
+        lastFacetEndByte = facet['index']['byteEnd'];
       }
     }
 
-    // 投稿文をウィジェットに追加する
+    // 最後のfacet以降のテキストを追加する
+    spans
+        .add(TextSpan(text: utf8.decode(facetBytes.sublist(lastFacetEndByte))));
+
+    // spansに格納されたテキストスパンをリッチテキストウィジェットとしてcontentWidgetsリストに追加する
     contentWidgets.add(
       RichText(
         text: TextSpan(

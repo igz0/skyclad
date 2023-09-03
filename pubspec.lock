@@ -349,14 +349,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.8.1"
-  linkify:
-    dependency: "direct main"
-    description:
-      name: linkify
-      sha256: bdfbdafec6cdc9cd0ebb333a868cafc046714ad508e48be8095208c54691d959
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.1.0"
   lints:
     dependency: transitive
     description:
