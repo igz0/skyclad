@@ -132,7 +132,7 @@ class PostWidget extends ConsumerWidget {
       RichText(
         text: TextSpan(
           children: spans,
-          style: const TextStyle(fontSize: 15.0, color: Colors.white),
+          style: const TextStyle(fontSize: 13.5, color: Colors.white),
         ),
       ),
     );
@@ -261,7 +261,7 @@ class PostWidget extends ConsumerWidget {
               const SizedBox(height: 10.0),
               Text(
                 quotedPost['value']['text'] ?? '',
-                style: const TextStyle(fontSize: 14.0),
+                style: const TextStyle(fontSize: 12.5),
               ),
             ],
           ),
