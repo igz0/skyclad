@@ -61,18 +61,18 @@ packages:
     dependency: "direct main"
     description:
       name: bluesky
-      sha256: "83844ba3fc4c8f6178c51605c885e0597f154ba96220254063a6c94bbabb49b8"
+      sha256: "514f7b5cff1117d19e205a95f36b9771caf0b7fe9961a48b006e5762de7d3f3a"
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.8"
+    version: "0.8.11"
   bluesky_text:
     dependency: "direct main"
     description:
       name: bluesky_text
-      sha256: fe689980467014b14d086ba8870df1ee274489ff298042544338b3807711df26
+      sha256: "189800c6e7e75c0424cca40099b7492d6bb0493c6225a4eb46805aad5a7ec95a"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.2"
+    version: "0.4.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -277,6 +277,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.2"
+  icann_tlds:
+    dependency: transitive
+    description:
+      name: icann_tlds
+      sha256: c94080902bec5a863ef6fecf5a490d18496a4b4584959fe9933c492a0673b00d
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   ieee754:
     dependency: transitive
     description:
