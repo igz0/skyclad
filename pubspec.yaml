@@ -44,7 +44,7 @@ dependencies:
   flutter_riverpod: ^2.3.6
   shared_preferences: ^2.1.0
   flutter_svg: ^2.0.5
-  bluesky_text: ^0.4.0
+  bluesky_text: ^0.4.1
   image_picker: ^0.8.7+5
 
 dependency_overrides:
