@@ -132,7 +132,7 @@ class PostWidget extends ConsumerWidget {
       RichText(
         text: TextSpan(
           children: spans,
-          style: const TextStyle(fontSize: 13.5, color: Colors.white),
+          style: const TextStyle(fontSize: 14, color: Colors.white),
         ),
       ),
     );

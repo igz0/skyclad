@@ -137,8 +137,10 @@ class NotificationScreen extends ConsumerWidget {
                                   : null,
                             ),
                           ),
-                          title: Text(getNotificationTitle(notification)),
-                          subtitle: Text(_getPostText(post)),
+                          title: Text(getNotificationTitle(notification),
+                              style: const TextStyle(fontSize: 15)),
+                          subtitle: Text(_getPostText(post),
+                              style: const TextStyle(fontSize: 14)),
                           trailing: !notification['isRead']
                               ? const Icon(Icons.fiber_manual_record,
                                   color: Colors.blue)
