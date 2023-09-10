@@ -723,42 +723,95 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                             },
                           ),
                           Column(children: [
-                            IconButton(
-                              icon: _isReposted!
-                                  ? const Icon(Icons.cached)
-                                  : const Icon(Icons.cached_outlined),
-                              color: _isReposted! ? Colors.green : null,
-                              onPressed: () async {
-                                setState(() {
-                                  _isReposted = !_isReposted!;
-                                  if (_isReposted!) {
-                                    post['repostCount'] += 1;
-                                  } else {
-                                    post['repostCount'] -= 1;
-                                  }
-                                });
+                            Material(
+                              type: MaterialType.transparency,
+                              child: IconButton(
+                                icon: _isReposted!
+                                    ? const Icon(Icons.cached,
+                                        color: Colors.green)
+                                    : const Icon(Icons.cached_outlined),
+                                onPressed: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: <Widget>[
+                                          ListTile(
+                                            leading: const Icon(Icons.cached),
+                                            title: _isReposted!
+                                                ? Text(AppLocalizations.of(
+                                                        context)!
+                                                    .undoRepost)
+                                                : Text(AppLocalizations.of(
+                                                        context)!
+                                                    .doRepost),
+                                            onTap: () async {
+                                              final bluesky = await ref.read(
+                                                  blueskySessionProvider
+                                                      .future);
 
-                                final bluesky = await ref
-                                    .read(blueskySessionProvider.future);
+                                              if (isReposted) {
+                                                // リポストを取り消し
+                                                await bluesky.repositories
+                                                    .deleteRecord(
+                                                  uri: bsky.AtUri.parse(
+                                                      post['viewer']['repost']),
+                                                );
 
-                                if (isReposted) {
-                                  // リポストを取り消し
-                                  await bluesky.repositories.deleteRecord(
-                                    uri: bsky.AtUri.parse(
-                                        post['viewer']['repost']),
+                                                setState(() {
+                                                  _isReposted = false;
+                                                });
+                                              } else {
+                                                // リポスト処理
+                                                final repostedRecord =
+                                                    await bluesky.feeds
+                                                        .createRepost(
+                                                  cid: post['cid'],
+                                                  uri: bsky.AtUri.parse(
+                                                      post['uri']),
+                                                );
+
+                                                // リポストを取り消せるようにリポストした投稿のURIを保存しておく
+                                                post['viewer']['repost'] =
+                                                    repostedRecord.data.uri
+                                                        .toString();
+
+                                                setState(() {
+                                                  _isReposted = true;
+                                                });
+                                              }
+
+                                              // ignore: use_build_context_synchronously
+                                              Navigator.of(context)
+                                                  .pop(); // BottomSheetを閉じる
+                                            },
+                                          ),
+                                          ListTile(
+                                            leading:
+                                                const Icon(Icons.format_quote),
+                                            title: Text(
+                                                AppLocalizations.of(context)!
+                                                    .quote),
+                                            onTap: () {
+                                              Navigator.of(context)
+                                                  .pop(); // BottomSheetを閉じる
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      CreatePostScreen(
+                                                          quoteJson: post),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   );
-                                } else {
-                                  // リポスト処理
-                                  final repostedRecord =
-                                      await bluesky.feeds.createRepost(
-                                    cid: post['cid'],
-                                    uri: bsky.AtUri.parse(post['uri']),
-                                  );
-                                  post['viewer']['repost'] = {
-                                    'uri': repostedRecord.data.uri
-                                  };
-                                }
-                              },
+                                },
+                              ),
                             ),
                           ]),
                           Column(children: [

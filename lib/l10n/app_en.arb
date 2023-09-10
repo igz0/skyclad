@@ -8,8 +8,11 @@
   "like": "like",
   "likes": "likes",
   "repost": "repost",
+  "doRepost": "Repost",
+  "undoRepost": "Undo Repost",
   "reposts": "reposts",
   "reply": "Reply",
+  "quote": "Quote Post",
   "followNotification": "{name} followed you.",
   "@followNotification": {
     "placeholders": {

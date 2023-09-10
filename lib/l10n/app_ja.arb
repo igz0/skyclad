@@ -10,7 +10,10 @@
   "likes": "いいね",
   "repost": "リポスト",
   "reposts": "リポスト",
+  "doRepost": "リポストする",
+  "undoRepost": "リポストを取り消す",
   "reply": "返信",
+  "quote": "引用ポスト",
   "followNotification": "{name}さんがあなたをフォローしました。",
   "@followNotification": {
     "placeholders": {
@@ -56,7 +59,7 @@
       }
     }
   },
-  "quoteNotification": "{name}さんがあなたの投稿を引用リポストしました。",
+  "quoteNotification": "{name}さんがあなたの投稿を引用ポストしました。",
   "@quoteNotification": {
     "placeholders": {
       "name": {
