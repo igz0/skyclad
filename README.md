@@ -22,6 +22,7 @@ English is also supported!!<br>
 ✅ Author feed (Profile viewer)<br>
 ✅ Like / Repost<br>
 ✅ Send Post / Reply<br>
+✅ Quote Post<br>
 ✅ Upload an image<br>
 ✅ Image preview<br>
 ✅ Follow / Unfollow user<br>
