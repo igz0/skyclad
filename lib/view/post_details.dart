@@ -35,23 +35,31 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
   @override
   void initState() {
     super.initState();
-
+    _post = widget.post;
     _fetchPost = _fetchPostDetails();
   }
 
   // 投稿の詳細を取得する
   Future<Map<String, dynamic>?> _fetchPostDetails() async {
-    _post = widget.post;
-
     final String postUri = widget.post['uri'];
     final bluesky = await ref.read(blueskySessionProvider.future);
     final feeds =
         await bluesky.feeds.findPosts(uris: [bsky.AtUri.parse(postUri)]);
-    final post = feeds.data.toJson()['posts'][0];
+    final postsList = feeds.data.toJson()['posts'];
+    final detailedPost =
+        (postsList != null && postsList.isNotEmpty) ? postsList[0] : null;
 
-    _isLiked = post['viewer']['like'] != null;
-    _isReposted = post['viewer']['repost'] != null;
-    return post;
+    if (detailedPost == null) {
+      // 何らかのエラーハンドリングを行うか、適切なデフォルト値を設定します。
+      return {};
+    }
+    setState(() {
+      _post = detailedPost;
+      _isLiked = detailedPost['viewer']['like'] != null;
+      _isReposted = detailedPost['viewer']['repost'] != null;
+    });
+
+    return detailedPost;
   }
 
   // 画像をダイアログで表示する
@@ -592,398 +600,394 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
       future: _fetchPost,
       builder: (BuildContext context,
           AsyncSnapshot<Map<String, dynamic>?> snapshot) {
+        Map<String, dynamic> post;
+
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          post = widget.post;
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
-        } else if (snapshot.hasData) {
-          final post = snapshot.data!;
-          final author = post['author'];
+        } else if (snapshot.hasData && snapshot.data != null) {
+          post = snapshot.data!;
+        } else {
+          post = widget.post;
+        }
 
-          final createdAt = DateTime.parse(post['indexedAt']).toLocal();
-          String dateStr;
-          // ignore: use_build_context_synchronously
-          String locale = Localizations.localeOf(context).toLanguageTag();
+        final author = post['author'];
 
-          if (locale == 'ja') {
-            DateFormat format = DateFormat('yyyy/MM/dd HH:mm');
-            dateStr = format.format(createdAt);
-          } else {
-            DateFormat format = DateFormat('MM/dd/yyyy h:mm a');
-            dateStr = format.format(createdAt);
-          }
+        final createdAt = DateTime.parse(post['indexedAt']).toLocal();
+        String dateStr;
+        // ignore: use_build_context_synchronously
+        String locale = Localizations.localeOf(context).toLanguageTag();
 
-          bool isLiked = post['viewer']['like'] != null;
-          bool isReposted = post['viewer']['repost'] != null;
+        if (locale == 'ja') {
+          DateFormat format = DateFormat('yyyy/MM/dd HH:mm');
+          dateStr = format.format(createdAt);
+        } else {
+          DateFormat format = DateFormat('MM/dd/yyyy h:mm a');
+          dateStr = format.format(createdAt);
+        }
 
-          return Scaffold(
-            appBar: AppBar(
-              centerTitle: true,
-              title: Text(author['displayName'] ?? ''),
-              backgroundColor: Colors.blue[600],
-            ),
-            body: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FutureBuilder(
-                      future: _buildParentPost(context, post),
-                      builder: (BuildContext context,
-                          AsyncSnapshot<Widget> snapshot) {
-                        if (snapshot.connectionState == ConnectionState.done) {
-                          if (snapshot.hasData) {
-                            return snapshot.data!;
-                          } else {
-                            return const SizedBox.shrink();
-                          }
+        bool isLiked = post['viewer'] != null && post['viewer']['like'] != null;
+        bool isReposted =
+            post['viewer'] != null && post['viewer']['repost'] != null;
+
+        return Scaffold(
+          appBar: AppBar(
+            centerTitle: true,
+            title: Text(author['displayName'] ?? ''),
+            backgroundColor: Colors.blue[600],
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FutureBuilder(
+                    future: _buildParentPost(context, post),
+                    builder:
+                        (BuildContext context, AsyncSnapshot<Widget> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        if (snapshot.data != null) {
+                          return snapshot.data!;
                         } else {
                           return const SizedBox.shrink();
                         }
-                      },
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    },
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => UserProfileScreen(
+                                actor: post['author']['handle'],
+                              ),
+                            ),
+                          );
+                        },
+                        child: CircleAvatar(
+                          backgroundImage: post['author']['avatar'] != null
+                              ? NetworkImage(post['author']['avatar'])
+                              : null,
+                          radius: 24,
+                          child: post['author']['avatar'] == null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: SvgPicture.asset(
+                                      'assets/default_avatar.svg',
+                                      width: 48,
+                                      height: 48),
+                                )
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: 10.0),
+                      Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              author['displayName'] ?? '',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontSize: 15.0, fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '@${author['handle']}',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.white38),
+                            ),
+                          ]),
+                    ],
+                  ),
+                  const SizedBox(height: 10.0),
+                  _buildPostContent(post),
+                  const SizedBox(height: 15.0),
+                  Text(
+                    dateStr,
+                    style:
+                        const TextStyle(fontSize: 14.0, color: Colors.white38),
+                  ),
+                  const SizedBox(height: 10.0),
+                  const Divider(height: 1, thickness: 1, color: Colors.white12),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        GestureDetector(
-                          onTap: () async {
+                        IconButton(
+                          icon: const Icon(Icons.reply),
+                          onPressed: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => UserProfileScreen(
-                                  actor: post['author']['handle'],
+                                builder: (context) => CreatePostScreen(
+                                  replyJson: post,
                                 ),
                               ),
                             );
                           },
-                          child: CircleAvatar(
-                            backgroundImage: post['author']['avatar'] != null
-                                ? NetworkImage(post['author']['avatar'])
-                                : null,
-                            radius: 24,
-                            child: post['author']['avatar'] == null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(24),
-                                    child: SvgPicture.asset(
-                                        'assets/default_avatar.svg',
-                                        width: 48,
-                                        height: 48),
-                                  )
-                                : null,
-                          ),
                         ),
-                        const SizedBox(width: 10.0),
-                        Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                author['displayName'] ?? '',
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    fontSize: 15.0,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                '@${author['handle']}',
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: Colors.white38),
-                              ),
-                            ]),
-                      ],
-                    ),
-                    const SizedBox(height: 10.0),
-                    _buildPostContent(post),
-                    const SizedBox(height: 15.0),
-                    Text(
-                      dateStr,
-                      style: const TextStyle(
-                          fontSize: 14.0, color: Colors.white38),
-                    ),
-                    const SizedBox(height: 10.0),
-                    const Divider(
-                        height: 1, thickness: 1, color: Colors.white12),
-                    Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
+                        Column(children: [
+                          Material(
+                            type: MaterialType.transparency,
+                            child: IconButton(
+                              icon: (_isReposted ?? false)
+                                  ? const Icon(Icons.cached,
+                                      color: Colors.green)
+                                  : const Icon(Icons.cached_outlined),
+                              onPressed: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        ListTile(
+                                          leading: const Icon(Icons.cached),
+                                          title: (_isReposted ?? false)
+                                              ? Text(
+                                                  AppLocalizations.of(context)!
+                                                      .undoRepost)
+                                              : Text(
+                                                  AppLocalizations.of(context)!
+                                                      .doRepost),
+                                          onTap: () async {
+                                            final bluesky = await ref.read(
+                                                blueskySessionProvider.future);
+
+                                            if (isReposted) {
+                                              // リポストを取り消し
+                                              await bluesky.repositories
+                                                  .deleteRecord(
+                                                uri: bsky.AtUri.parse(
+                                                    post['viewer']['repost']),
+                                              );
+
+                                              setState(() {
+                                                _isReposted = false;
+                                              });
+                                            } else {
+                                              // リポスト処理
+                                              final repostedRecord =
+                                                  await bluesky.feeds
+                                                      .createRepost(
+                                                cid: post['cid'],
+                                                uri: bsky.AtUri.parse(
+                                                    post['uri']),
+                                              );
+
+                                              // リポストを取り消せるようにリポストした投稿のURIを保存しておく
+                                              post['viewer']['repost'] =
+                                                  repostedRecord.data.uri
+                                                      .toString();
+
+                                              setState(() {
+                                                _isReposted = true;
+                                              });
+                                            }
+
+                                            // ignore: use_build_context_synchronously
+                                            Navigator.of(context)
+                                                .pop(); // BottomSheetを閉じる
+                                          },
+                                        ),
+                                        ListTile(
+                                          leading:
+                                              const Icon(Icons.format_quote),
+                                          title: Text(
+                                              AppLocalizations.of(context)!
+                                                  .quote),
+                                          onTap: () {
+                                            Navigator.of(context)
+                                                .pop(); // BottomSheetを閉じる
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    CreatePostScreen(
+                                                        quoteJson: post),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ]),
+                        Column(children: [
                           IconButton(
-                            icon: const Icon(Icons.reply),
-                            onPressed: () {
+                            icon: (_isLiked ?? false)
+                                ? const Icon(Icons.favorite)
+                                : const Icon(Icons.favorite_border),
+                            color: (_isLiked ?? false) ? Colors.red : null,
+                            onPressed: () async {
+                              setState(() {
+                                _isLiked = !(_isLiked ?? false);
+                                if (_isLiked!) {
+                                  post['likeCount'] += 1;
+                                } else {
+                                  post['likeCount'] -= 1;
+                                }
+                              });
+
+                              final bluesky =
+                                  await ref.read(blueskySessionProvider.future);
+
+                              if (isLiked) {
+                                // いいねを取り消し
+                                await bluesky.repositories.deleteRecord(
+                                  uri: bsky.AtUri.parse(post['viewer']['like']),
+                                );
+                              } else {
+                                // いいね処理
+                                final likedRecord =
+                                    await bluesky.feeds.createLike(
+                                  cid: post['cid'],
+                                  uri: bsky.AtUri.parse(post['uri']),
+                                );
+                                post['viewer']
+                                    ['like'] = {'uri': likedRecord.data.uri};
+                              }
+                            },
+                          ),
+                        ]),
+                        Column(children: [
+                          PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_horiz),
+                            onSelected: (value) {
+                              if (value == "report") {
+                                // TODO: 投稿を報告する処理をここに書く
+                                // ignore: use_build_context_synchronously
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(AppLocalizations.of(context)!
+                                        .postReported),
+                                    backgroundColor: Colors.white,
+                                  ),
+                                );
+                              }
+                            },
+                            itemBuilder: (BuildContext context) =>
+                                <PopupMenuEntry<String>>[
+                              PopupMenuItem<String>(
+                                value: "report",
+                                child: ListTile(
+                                  title: Text(
+                                      AppLocalizations.of(context)!.reportPost),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ]),
+                      ]),
+                  const Divider(height: 1, thickness: 1, color: Colors.white12),
+                  const SizedBox(height: 10.0),
+                  Row(
+                    children: [
+                      const SizedBox(width: 30.0),
+                      Row(
+                        children: [
+                          const SizedBox(width: 10.0),
+                          GestureDetector(
+                            onTap: () {
+                              // リポストの数字がタップされたときの処理をここに追加します
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => CreatePostScreen(
-                                    replyJson: post,
-                                  ),
+                                  builder: (context) =>
+                                      RepostedByScreen(uri: post['uri']),
                                 ),
                               );
                             },
-                          ),
-                          Column(children: [
-                            Material(
-                              type: MaterialType.transparency,
-                              child: IconButton(
-                                icon: _isReposted!
-                                    ? const Icon(Icons.cached,
-                                        color: Colors.green)
-                                    : const Icon(Icons.cached_outlined),
-                                onPressed: () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: <Widget>[
-                                          ListTile(
-                                            leading: const Icon(Icons.cached),
-                                            title: _isReposted!
-                                                ? Text(AppLocalizations.of(
-                                                        context)!
-                                                    .undoRepost)
-                                                : Text(AppLocalizations.of(
-                                                        context)!
-                                                    .doRepost),
-                                            onTap: () async {
-                                              final bluesky = await ref.read(
-                                                  blueskySessionProvider
-                                                      .future);
-
-                                              if (isReposted) {
-                                                // リポストを取り消し
-                                                await bluesky.repositories
-                                                    .deleteRecord(
-                                                  uri: bsky.AtUri.parse(
-                                                      post['viewer']['repost']),
-                                                );
-
-                                                setState(() {
-                                                  _isReposted = false;
-                                                });
-                                              } else {
-                                                // リポスト処理
-                                                final repostedRecord =
-                                                    await bluesky.feeds
-                                                        .createRepost(
-                                                  cid: post['cid'],
-                                                  uri: bsky.AtUri.parse(
-                                                      post['uri']),
-                                                );
-
-                                                // リポストを取り消せるようにリポストした投稿のURIを保存しておく
-                                                post['viewer']['repost'] =
-                                                    repostedRecord.data.uri
-                                                        .toString();
-
-                                                setState(() {
-                                                  _isReposted = true;
-                                                });
-                                              }
-
-                                              // ignore: use_build_context_synchronously
-                                              Navigator.of(context)
-                                                  .pop(); // BottomSheetを閉じる
-                                            },
-                                          ),
-                                          ListTile(
-                                            leading:
-                                                const Icon(Icons.format_quote),
-                                            title: Text(
-                                                AppLocalizations.of(context)!
-                                                    .quote),
-                                            onTap: () {
-                                              Navigator.of(context)
-                                                  .pop(); // BottomSheetを閉じる
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      CreatePostScreen(
-                                                          quoteJson: post),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                          ]),
-                          Column(children: [
-                            IconButton(
-                              icon: _isLiked!
-                                  ? const Icon(Icons.favorite)
-                                  : const Icon(Icons.favorite_border),
-                              color: _isLiked! ? Colors.red : null,
-                              onPressed: () async {
-                                setState(() {
-                                  _isLiked = !_isLiked!;
-                                  if (_isLiked!) {
-                                    post['likeCount'] += 1;
-                                  } else {
-                                    post['likeCount'] -= 1;
-                                  }
-                                });
-
-                                final bluesky = await ref
-                                    .read(blueskySessionProvider.future);
-
-                                if (isLiked) {
-                                  // いいねを取り消し
-                                  await bluesky.repositories.deleteRecord(
-                                    uri: bsky.AtUri.parse(
-                                        post['viewer']['like']),
-                                  );
-                                } else {
-                                  // いいね処理
-                                  final likedRecord =
-                                      await bluesky.feeds.createLike(
-                                    cid: post['cid'],
-                                    uri: bsky.AtUri.parse(post['uri']),
-                                  );
-                                  post['viewer']
-                                      ['like'] = {'uri': likedRecord.data.uri};
-                                }
-                              },
-                            ),
-                          ]),
-                          Column(children: [
-                            PopupMenuButton<String>(
-                              icon: const Icon(Icons.more_horiz),
-                              onSelected: (value) {
-                                if (value == "report") {
-                                  // TODO: 投稿を報告する処理をここに書く
-                                  // ignore: use_build_context_synchronously
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                          AppLocalizations.of(context)!
-                                              .postReported),
-                                      backgroundColor: Colors.white,
-                                    ),
-                                  );
-                                }
-                              },
-                              itemBuilder: (BuildContext context) =>
-                                  <PopupMenuEntry<String>>[
-                                PopupMenuItem<String>(
-                                  value: "report",
-                                  child: ListTile(
-                                    title: Text(AppLocalizations.of(context)!
-                                        .reportPost),
-                                  ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  post['repostCount'].toString(),
+                                  style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold),
                                 ),
+                                const SizedBox(height: 2.0),
+                                Text(
+                                  // リポスト数が2以上のときは複数形を表示する
+                                  2 <= post['repostCount']
+                                      ? AppLocalizations.of(context)!.reposts
+                                      : AppLocalizations.of(context)!.repost,
+                                  style: const TextStyle(
+                                      fontSize: 12, color: Colors.white60),
+                                )
                               ],
                             ),
-                          ]),
-                        ]),
-                    const Divider(
-                        height: 1, thickness: 1, color: Colors.white12),
-                    const SizedBox(height: 10.0),
-                    Row(
-                      children: [
-                        const SizedBox(width: 30.0),
-                        Row(
-                          children: [
-                            const SizedBox(width: 10.0),
-                            GestureDetector(
-                              onTap: () {
-                                // リポストの数字がタップされたときの処理をここに追加します
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        RepostedByScreen(uri: post['uri']),
-                                  ),
-                                );
-                              },
-                              child: Column(
-                                children: [
-                                  Text(
-                                    post['repostCount'].toString(),
+                          ),
+                          const SizedBox(width: 43.0),
+                          const SizedBox(
+                            height: 50,
+                            child: VerticalDivider(
+                                width: 1, thickness: 1, color: Colors.white30),
+                          ),
+                          const SizedBox(width: 43.0),
+                          GestureDetector(
+                            onTap: () {
+                              // いいねの数字がタップされたときの処理をここに追加します
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      LikedByScreen(uri: post['uri']),
+                                ),
+                              );
+                            },
+                            child: Column(
+                              children: [
+                                Text(post['likeCount'].toString(),
                                     style: const TextStyle(
                                         fontSize: 15,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 2.0),
-                                  Text(
-                                    // リポスト数が2以上のときは複数形を表示する
-                                    2 <= post['repostCount']
-                                        ? AppLocalizations.of(context)!.reposts
-                                        : AppLocalizations.of(context)!.repost,
+                                        fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 2.0),
+                                Text(
+                                    // いいね数が2以上のときは複数形を表示する
+                                    2 <= post['likeCount']
+                                        ? AppLocalizations.of(context)!.likes
+                                        : AppLocalizations.of(context)!.like,
                                     style: const TextStyle(
-                                        fontSize: 12, color: Colors.white60),
-                                  )
-                                ],
-                              ),
+                                        fontSize: 12, color: Colors.white60)),
+                              ],
                             ),
-                            const SizedBox(width: 43.0),
-                            const SizedBox(
-                              height: 50,
-                              child: VerticalDivider(
-                                  width: 1,
-                                  thickness: 1,
-                                  color: Colors.white30),
-                            ),
-                            const SizedBox(width: 43.0),
-                            GestureDetector(
-                              onTap: () {
-                                // いいねの数字がタップされたときの処理をここに追加します
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        LikedByScreen(uri: post['uri']),
-                                  ),
-                                );
-                              },
-                              child: Column(
-                                children: [
-                                  Text(post['likeCount'].toString(),
-                                      style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold)),
-                                  const SizedBox(height: 2.0),
-                                  Text(
-                                      // いいね数が2以上のときは複数形を表示する
-                                      2 <= post['likeCount']
-                                          ? AppLocalizations.of(context)!.likes
-                                          : AppLocalizations.of(context)!.like,
-                                      style: const TextStyle(
-                                          fontSize: 12, color: Colors.white60)),
-                                ],
-                              ),
-                            )
-                          ],
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 10.0),
-                    FutureBuilder(
-                      future: _buildThreadPost(context, post),
-                      builder: (BuildContext context,
-                          AsyncSnapshot<Widget> snapshot) {
-                        if (snapshot.connectionState == ConnectionState.done) {
-                          if (snapshot.hasData) {
-                            return snapshot.data!;
-                          } else {
-                            return const SizedBox.shrink();
-                          }
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 10.0),
+                  FutureBuilder(
+                    future: _buildThreadPost(context, post),
+                    builder:
+                        (BuildContext context, AsyncSnapshot<Widget> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        if (snapshot.data != null) {
+                          return snapshot.data!;
                         } else {
                           return const SizedBox.shrink();
                         }
-                      },
-                    ),
-                  ],
-                ),
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    },
+                  ),
+                ],
               ),
             ),
-          );
-        } else {
-          return const Text("データがありません");
-        }
+          ),
+        );
       },
     );
   }
