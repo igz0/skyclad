@@ -39,7 +39,7 @@ class LoginScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16.0),
               TextField(
-                controller: _usernameController, // 追加
+                controller: _usernameController,
                 decoration: const InputDecoration(
                   labelText: 'Username or email address',
                   hintText: 'Enter your username(e.g. test.bsky.social)',
@@ -47,7 +47,7 @@ class LoginScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16.0),
               TextField(
-                controller: _passwordController, // 追加
+                controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'App Password',

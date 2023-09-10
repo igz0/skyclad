@@ -314,7 +314,6 @@ class UserProfileScreen extends ConsumerWidget {
     ]);
   }
 
-  // 必要に応じて、_buildRepostedByと_buildRepliedByメソッドも追加します。
   // 投稿がリポストだった場合にリポストであることを表記したウィジェットを作成する
   Widget _buildRepostedBy(Map<String, dynamic> feed) {
     if (feed['reason'] != null &&

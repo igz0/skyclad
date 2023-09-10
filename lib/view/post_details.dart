@@ -433,7 +433,6 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
               ),
               const SizedBox(width: 10.0),
               Expanded(
-                // 追加
                 child: Text(
                   '${author['displayName'] ?? ''} (@${author['handle']})',
                   style: const TextStyle(
@@ -501,8 +500,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
 
         return Column(
           children: [
-            if (index != 0) // この行を追加
-              const Divider(color: Colors.white38, height: 1.0), // この行を追加
+            if (index != 0) const Divider(color: Colors.white38, height: 1.0),
             InkWell(
               onTap: () {
                 // 投稿詳細画面への遷移
@@ -552,7 +550,6 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
                       ),
                       const SizedBox(width: 10.0),
                       Expanded(
-                        // 追加
                         child: Text(
                           '${author['displayName'] ?? ''} (@${author['handle']})',
                           style: const TextStyle(
@@ -584,7 +581,7 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
           ],
         );
       },
-      shrinkWrap: true, // 追加
+      shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
     );
   }
