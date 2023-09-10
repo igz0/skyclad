@@ -102,6 +102,8 @@ class LoginScreen extends ConsumerWidget {
                     );
                   } catch (e) {
                     // ログインに失敗した場合の処理
+
+                    // ignore: use_build_context_synchronously
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(e.toString()),
