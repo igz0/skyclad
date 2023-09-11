@@ -218,8 +218,8 @@ class _PostDetailsState extends ConsumerState<PostDetails> {
 
     // spansに格納されたテキストスパンをリッチテキストウィジェットとしてcontentWidgetsリストに追加する
     contentWidgets.add(
-      RichText(
-        text: TextSpan(
+      SelectableText.rich(
+        TextSpan(
           children: spans,
           style: const TextStyle(fontSize: 15.0, color: Colors.white),
         ),
